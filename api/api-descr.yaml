@@ -6,8 +6,71 @@ info:
   version: '1.0.0'
 servers:
   - url: http://localhost/
+components:
+  schemas:
+    userId:
+      title: User identifier
+      description: A user's id
+      type: integer
+      example: 90635441
+      format: int64
+    userName:
+      title: User name
+      description: regex definition of an acceptable username
+      type: string
+      example: Maria
+      pattern: '^.*?$'
+      minLength: 3
+      maxLength: 16
+    user:
+      title: User representation
+      description: A complete representation of the whole user resource
+      type: object
+      properties:
+        id:
+          description: The user's unique identifier
+          $ref: "#/components/schemas/userId"
+        name:
+          description: The user's name
+          $ref: "#/components/schemas/userName"
+    photo:
+      title: Photo representation
+      description: How a photo is represented in this application
+      type: string
+      format: binary
+      maxLength: 52428800 # 50 MiB
+      # TODO:
+      #   1- add maximum length (?)
+      #   2- IF above, add ability to combine multiple photos
+      #     to get arbitrarily sized images
+    postTitle:
+      title: Post title
+      example: A curious title
+      type: string
+      minLength: 4
+      maxLength: 64
+    postId:
+      title: Post identifier
+      example: 123456
+      type: integer
+      format: int64
+    post:
+      title: Photo post
+      description: A user's photo post
+      type: object
+      properties:
+        id:
+          $ref: "#/components/schemas/postId"
+        date:
+          type: string
+          format: date-time
+        photo:
+          $ref: "#/components/schemas/photo"
+        title:
+          $ref: "#/components/schemas/postTitle"
+      
 paths:
-  /session:
+  /users:
     post:
       tags: ["login"]
       summary: Logs in the user
@@ -17,18 +80,11 @@ paths:
         If the user exists, the user identifier is returned.
       operationId: doLogin
       requestBody:
-        description: User details
+        description: Request's username
         content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                name:
-                  type: string
-                  example: Maria
-                  pattern: '^.*?$'
-                  minLength: 3
-                  maxLength: 16
+            application/json:
+              schema:
+                $ref: "#/components/schemas/userName"
         required: true
       responses:
         '200':
@@ -36,18 +92,64 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  identifier:
-                    type: string
-                    example: "abcdef012345"
+                $ref: "#/components/schemas/userId"
         '201':
           description: User log-in (registration) action successful
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  identifier:
-                    type: string
-                    example: "uoo00o0000"
+                $ref: "#/components/schemas/userId"
+        '400':
+          description: Unacceptable username
+  /users/{userId}:
+    put: 
+      tags: ["user"]
+      summary: Modify username
+      description: |-
+        Modifies the user name
+      operationId: setMyUserName
+      requestBody:
+        description: New username
+        content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/userName"
+        required: true
+      responses:
+        '200':
+          description: Username change successfull
+        '400':
+          description: Unacceptable username
+        '404':
+          description: User not found
+  /users/{userId}/posts:
+    post:
+      tags: ["post"]
+      summary: Post a post
+      description: |-
+        Add a post to the user's page
+      operationId: uploadPhoto
+      requestBody:
+        description: Post summary
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  $ref: "#/components/schemas/postTitle"
+                photo:
+                  $ref: "#/components/schemas/photo"
+        required: true
+      responses:
+        '201':
+          description: Successful post
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/postId"
+        '413':
+          description: Photo is too big!
+        '500':
+          description: The server is wrong somehow
+        
