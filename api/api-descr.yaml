@@ -79,13 +79,12 @@ paths:
         and an identifier is returned.
         If the user exists, the user identifier is returned.
       operationId: doLogin
-      requestBody:
-        description: Request's username
-        content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/userName"
-        required: true
+      parameters:
+        - in: query
+          name: username
+          schema:
+            $ref: "#/components/schemas/userName"
+          required: true
       responses:
         '200':
           description: User log-in action successful
@@ -102,19 +101,24 @@ paths:
         '400':
           description: Unacceptable username
   /users/{userId}:
-    put: 
+    parameters:
+      - in: path
+        name: userId
+        schema:
+          $ref: "#/components/schemas/userId"
+        required: true
+    put:
       tags: ["user"]
       summary: Modify username
       description: |-
         Modifies the user name
       operationId: setMyUserName
-      requestBody:
-        description: New username
-        content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/userName"
-        required: true
+      parameters:
+        - in: query
+          name: username
+          schema:
+            $ref: "#/components/schemas/userName"
+          required: true
       responses:
         '200':
           description: Username change successfull
@@ -122,25 +126,124 @@ paths:
           description: Unacceptable username
         '404':
           description: User not found
+    get:
+      tags: ["user"]
+      summary: Get user
+      description: |-
+        Requests a user's profile
+      operationId: getUserProfile
+      responses:
+        '200':
+          description: Returning user's profile
+          # TODO: return the user and all of his posts
+        '404':
+          description: User not found
+# I'm not at all happy about the current state of ban and follow lists.
+#   A post/delete request should create/delete resources, but in this case
+#   I am using it them to update lists. Unfortunately though I have no idea how to
+#   change this since I have to explicitely provide the operationId's for those
+#   (not to mention that providing everything under a "patch" request for the user
+#   seems a bit unwieldy).
+  /users/{userId}/followed-users/{otherId}:
+    parameters:
+      - in: path
+        name: userId
+        schema:
+          $ref: "#/components/schemas/userId"
+        required: true
+      - in: path
+        name: otherId
+        schema:
+          $ref: "#/components/schemas/userId"
+        required: true
+    put:
+      tags: ["follow"]
+      summary: Follow user
+      description: |-
+        Follows user if it is not followed (cannot follow self)
+      operationId: followUser
+      responses:
+        '200':
+          description: Successful addition
+        '404':
+          description: User not found
+        '406':
+          description: Other user not found
+        '409':
+          description: Cannot follow self
+    delete:
+      tags: ["follow"]
+      summary: Un-follow user
+      description: |-
+        Un-follows user if it is followed
+      operationId: unfollowUser
+      responses:
+        '200':
+          description: Successful removal
+        '404':
+          description: User not found
+  /users/{userId}/banned-users/{otherId}:
+    parameters:
+      - in: path
+        name: userId
+        schema:
+          $ref: "#/components/schemas/userId"
+        required: true
+      - in: path
+        name: otherId
+        schema:
+          $ref: "#/components/schemas/userId"
+        required: true
+    put:
+      tags: ["ban"]
+      summary: Ban user
+      description: |-
+        Bans user if it is not yet banned (cannot ban self)
+      operationId: banUser
+      responses:
+        '200':
+          description: Successful addition
+        '404':
+          description: User not found
+        '406':
+          description: Other user not found
+        '409':
+          description: Cannot ban self
+    delete:
+      tags: ["ban"]
+      summary: Un-ban user
+      description: |-
+        Un-bans user if it is banned
+      operationId: unbanUser
+      responses:
+        '200':
+          description: Successful removal
+        '404':
+          description: User not found
   /users/{userId}/posts:
+    parameters:
+    - in: path
+      name: userId
+      schema:
+        $ref: "#/components/schemas/userId"
+      required: true
     post:
       tags: ["post"]
       summary: Post a post
       description: |-
         Add a post to the user's page
       operationId: uploadPhoto
-      requestBody:
-        description: Post summary
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                title:
-                  $ref: "#/components/schemas/postTitle"
-                photo:
-                  $ref: "#/components/schemas/photo"
-        required: true
+      parameters:
+        - in: header
+          name: post
+          schema:
+            type: object
+            properties:
+              title:
+                $ref: "#/components/schemas/postTitle"
+              photo:
+                $ref: "#/components/schemas/photo"
+          required: true
       responses:
         '201':
           description: Successful post
@@ -152,4 +255,5 @@ paths:
           description: Photo is too big!
         '500':
           description: The server is wrong somehow
-        
+        '404':
+          description: User not found
