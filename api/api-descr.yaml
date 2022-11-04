@@ -7,6 +7,17 @@ info:
 servers:
   - url: http://localhost/
 components:
+  securitySchemes:
+    bearerAuth:            # arbitrary name for the security scheme
+      type: http
+      scheme: bearer
+  responses:
+    UnauthorizedError:
+      description: Access token is missing or invalid
+    InternalServerError:
+      description: |-
+        The server encountered an internal error.
+        Welp...
   schemas:
     userId:
       title: User identifier
@@ -20,19 +31,8 @@ components:
       type: string
       example: Maria
       pattern: '^.*?$'
-      minLength: 3
-      maxLength: 16
-    user:
-      title: User representation
-      description: A complete representation of the whole user resource
-      type: object
-      properties:
-        id:
-          description: The user's unique identifier
-          $ref: "#/components/schemas/userId"
-        name:
-          description: The user's name
-          $ref: "#/components/schemas/userName"
+      minLength: 4
+      maxLength: 32
     photo:
       title: Photo representation
       description: How a photo is represented in this application
@@ -68,7 +68,6 @@ components:
           $ref: "#/components/schemas/photo"
         title:
           $ref: "#/components/schemas/postTitle"
-      
 paths:
   /users:
     post:
@@ -100,14 +99,18 @@ paths:
                 $ref: "#/components/schemas/userId"
         '400':
           description: Unacceptable username
-  /users/{userId}:
+        '500':
+           $ref: '#/components/responses/InternalServerError'
+  /users/{userName}:
     parameters:
       - in: path
-        name: userId
+        name: userName
         schema:
-          $ref: "#/components/schemas/userId"
+          $ref: "#/components/schemas/userName"
         required: true
     put:
+      security:
+      - bearerAuth: []
       tags: ["user"]
       summary: Modify username
       description: |-
@@ -115,20 +118,25 @@ paths:
       operationId: setMyUserName
       parameters:
         - in: query
-          name: username
+          name: newUserName
           schema:
             $ref: "#/components/schemas/userName"
           required: true
       responses:
         '200':
           description: Username change successfull
+          # Maybe should return userRepr
         '400':
           description: Unacceptable username
+        '401':
+           $ref: '#/components/responses/UnauthorizedError'
         '404':
           description: User not found
+        '500':
+           $ref: '#/components/responses/InternalServerError'
     get:
       tags: ["user"]
-      summary: Get user
+      summary: Get user profile
       description: |-
         Requests a user's profile
       operationId: getUserProfile
@@ -138,25 +146,27 @@ paths:
           # TODO: return the user and all of his posts
         '404':
           description: User not found
-# I'm not at all happy about the current state of ban and follow lists.
-#   A post/delete request should create/delete resources, but in this case
-#   I am using it them to update lists. Unfortunately though I have no idea how to
-#   change this since I have to explicitely provide the operationId's for those
-#   (not to mention that providing everything under a "patch" request for the user
-#   seems a bit unwieldy).
-  /users/{userId}/followed-users/{otherId}:
+        '500':
+           $ref: '#/components/responses/InternalServerError'
+  # I am not at all happy with the current state of the followed and banned users,
+  # put/delete operations should create and delete resources, but in this case I 
+  # am forced to make them modify the resource... unfortunately though I have to
+  # provide the operationId's, therefore this.
+  /users/{userName}/followed-users:
     parameters:
       - in: path
-        name: userId
+        name: userName
         schema:
-          $ref: "#/components/schemas/userId"
+          $ref: "#/components/schemas/userName"
         required: true
-      - in: path
-        name: otherId
+      - in: query
+        name: otherUser
         schema:
-          $ref: "#/components/schemas/userId"
+          $ref: "#/components/schemas/userName"
         required: true
     put:
+      security:
+      - bearerAuth: []
       tags: ["follow"]
       summary: Follow user
       description: |-
@@ -165,13 +175,19 @@ paths:
       responses:
         '200':
           description: Successful addition
+        '401':
+           $ref: '#/components/responses/UnauthorizedError'
         '404':
           description: User not found
         '406':
           description: Other user not found
         '409':
           description: Cannot follow self
+        '500':
+           $ref: '#/components/responses/InternalServerError'
     delete:
+      security:
+      - bearerAuth: []
       tags: ["follow"]
       summary: Un-follow user
       description: |-
@@ -180,21 +196,27 @@ paths:
       responses:
         '200':
           description: Successful removal
+        '401':
+           $ref: '#/components/responses/UnauthorizedError'
         '404':
           description: User not found
-  /users/{userId}/banned-users/{otherId}:
+        '500':
+           $ref: '#/components/responses/InternalServerError'
+  /users/{userId}/banned-users:
     parameters:
       - in: path
-        name: userId
+        name: userName
         schema:
-          $ref: "#/components/schemas/userId"
+          $ref: "#/components/schemas/userName"
         required: true
-      - in: path
-        name: otherId
+      - in: query
+        name: otherUser
         schema:
-          $ref: "#/components/schemas/userId"
+          $ref: "#/components/schemas/userName"
         required: true
     put:
+      security:
+      - bearerAuth: []      
       tags: ["ban"]
       summary: Ban user
       description: |-
@@ -203,13 +225,19 @@ paths:
       responses:
         '200':
           description: Successful addition
+        '401':
+           $ref: '#/components/responses/UnauthorizedError'
         '404':
           description: User not found
         '406':
           description: Other user not found
         '409':
           description: Cannot ban self
+        '500':
+           $ref: '#/components/responses/InternalServerError'
     delete:
+      security:
+      - bearerAuth: []  
       tags: ["ban"]
       summary: Un-ban user
       description: |-
@@ -218,16 +246,22 @@ paths:
       responses:
         '200':
           description: Successful removal
+        '401':
+           $ref: '#/components/responses/UnauthorizedError'
         '404':
           description: User not found
-  /users/{userId}/posts:
+        '500':
+           $ref: '#/components/responses/InternalServerError'
+  /users/{userName}/posts:
     parameters:
     - in: path
-      name: userId
+      name: userName
       schema:
-        $ref: "#/components/schemas/userId"
+        $ref: "#/components/schemas/userName"
       required: true
     post:
+      security:
+      - bearerAuth: []  
       tags: ["post"]
       summary: Post a post
       description: |-
@@ -251,9 +285,11 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/postId"
+        '401':
+           $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: User not found
         '413':
           description: Photo is too big!
         '500':
-          description: The server is wrong somehow
-        '404':
-          description: User not found
+           $ref: '#/components/responses/InternalServerError'
