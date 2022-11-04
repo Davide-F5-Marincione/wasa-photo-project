@@ -152,7 +152,7 @@ paths:
   # put/delete operations should create and delete resources, but in this case I 
   # am forced to make them modify the resource... unfortunately though I have to
   # provide the operationId's, therefore this.
-  /users/{userName}/followed-users:
+  /users/{userName}/is-following:
     parameters:
       - in: path
         name: userName
@@ -179,10 +179,10 @@ paths:
            $ref: '#/components/responses/UnauthorizedError'
         '404':
           description: User not found
-        '406':
-          description: Other user not found
         '409':
           description: Cannot follow self
+        '410':
+          description: Other user not found
         '500':
            $ref: '#/components/responses/InternalServerError'
     delete:
@@ -202,7 +202,7 @@ paths:
           description: User not found
         '500':
            $ref: '#/components/responses/InternalServerError'
-  /users/{userId}/banned-users:
+  /users/{userName}/is-banning:
     parameters:
       - in: path
         name: userName
@@ -229,10 +229,10 @@ paths:
            $ref: '#/components/responses/UnauthorizedError'
         '404':
           description: User not found
-        '406':
-          description: Other user not found
         '409':
           description: Cannot ban self
+        '410':
+          description: Other user not found
         '500':
            $ref: '#/components/responses/InternalServerError'
     delete:
@@ -246,6 +246,31 @@ paths:
       responses:
         '200':
           description: Successful removal
+        '401':
+           $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: User not found
+        '500':
+           $ref: '#/components/responses/InternalServerError'
+  /users/{userName}/stream:
+    parameters:
+    - in: path
+      name: userName
+      schema:
+        $ref: "#/components/schemas/userName"
+      required: true
+    get:
+      security:
+      - bearerAuth: []  
+      tags: ["stream"]
+      summary: Receive stream
+      description: |-
+        Receive the user's stream filled with info from the people they follow
+      operationId: getMyStream
+      responses:
+        '200':
+          description: Here's your stream!
+          # TODO: describe stream
         '401':
            $ref: '#/components/responses/UnauthorizedError'
         '404':
@@ -291,5 +316,92 @@ paths:
           description: User not found
         '413':
           description: Photo is too big!
+        '500':
+           $ref: '#/components/responses/InternalServerError'
+  /users/{userName}/posts/{postId}:
+    parameters:
+    - in: path
+      name: userName
+      schema:
+        $ref: "#/components/schemas/userName"
+      required: true
+    - in: path
+      name: postId
+      schema:
+        $ref: "#/components/schemas/postId"
+      required: true
+    delete:
+      security:
+      - bearerAuth: []
+      tags: ["post"]
+      summary: Delete post
+      description: |-
+        Delete a post and all of its relative stuff (comments, likes, etc.)
+      operationId: deletePhoto
+      responses:
+        '200':
+          description: Post removal successful
+        '401':
+           $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: User or post not found
+        '500':
+           $ref: '#/components/responses/InternalServerError'
+  /users/{userName}/posts/{postId}/user-likes:
+    parameters:
+    - in: path
+      name: userName
+      schema:
+        $ref: "#/components/schemas/userName"
+      required: true
+    - in: path
+      name: postId
+      schema:
+        $ref: "#/components/schemas/postId"
+      required: true
+    - in: query
+      name: self
+      schema:
+        $ref: "#/components/schemas/userName"
+      required: false
+    put:
+      security:
+      - bearerAuth: []      
+      tags: ["like"]
+      summary: Like post
+      description: |-
+        Put a like on a post (not on yours of course)
+      operationId: likePhoto
+      responses:
+        '200':
+          description: Successful like
+        '401':
+           $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: Recipient or post not found
+        '409':
+          description: Cannot like self
+        '410':
+          description: Self not found
+        '500':
+           $ref: '#/components/responses/InternalServerError'
+    delete:
+      security:
+      - bearerAuth: []  
+      tags: ["like"]
+      summary: Un-like post
+      description: |-
+        Remove like from a post
+      operationId: unlikePhoto
+      responses:
+        '200':
+          description: Successful removal
+        '401':
+           $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: Recipient or post not found
+        # TODO: decide if to keep 410
+        '410':
+          description: Self not found
         '500':
            $ref: '#/components/responses/InternalServerError'
