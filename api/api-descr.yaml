@@ -39,10 +39,6 @@ components:
       type: string
       format: binary
       maxLength: 52428800 # 50 MiB
-      # TODO:
-      #   1- add maximum length (?)
-      #   2- IF above, add ability to combine multiple photos
-      #     to get arbitrarily sized images
     photoTitle:
       title: Photo title
       example: A curious title
@@ -74,6 +70,11 @@ components:
       type: string
       minLength: 1
       maxLength: 256
+    commentId:
+      title: Comment identifier
+      example: 1
+      type: integer
+      format: int64
     comment:
       title: Comment
       description: A user's comment under a photo
@@ -478,12 +479,53 @@ paths:
       responses:
         '201':
           description: Comment successful
-          # May have to return some stuff... perhaps a comment id?
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/commentId"
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           description: Photo or User not found
         '500':
           $ref: '#/components/responses/InternalServerError'
+
   /users/{userName}/photos/{photoId}/comments/{commentId}:
-    # TODO
+    parameters:
+      - in: path
+        name: userName
+        schema:
+          $ref: "#/components/schemas/userName"
+        required: true
+      - in: path
+        name: photoId
+        schema:
+          $ref: "#/components/schemas/photoId"
+        required: true
+      - in: path
+        name: commentId
+        schema:
+          $ref: "#/components/schemas/commentId"
+        required: true
+      - in: header
+        name: self
+        schema:
+          $ref: "#/components/schemas/userId"
+        required: false
+    delete:
+      security:
+      - bearerAuth: []
+      tags: ["comment"]
+      summary: Delete comment
+      description: |-
+        Deletes a comment from a photo's post
+      operationId: uncommentPhoto
+      responses:
+        '200':
+          description: Comment delete successful
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: Comment, Photo or User not found
+        '500':
+          $ref: '#/components/responses/InternalServerError'
