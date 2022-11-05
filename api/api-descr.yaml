@@ -87,6 +87,23 @@ components:
         date:
           type: string
           format: date-time
+    wholePost:
+      title: A whole post
+      description: The representation of a full post
+      type: object
+      properties:
+        photo:
+          $ref: "#/components/schemas/photo"
+        author:
+          $ref: "#/components/schemas/userName"
+        comments:
+          type: array
+          items:
+            $ref: "#/components/schemas/comment"
+        likes:
+          type: array
+          items:
+            $ref: "#/components/schemas/userName"
 paths:
   /users:
     post:
@@ -119,7 +136,7 @@ paths:
         '400':
           description: Unacceptable username
         '500':
-           $ref: '#/components/responses/InternalServerError'
+          $ref: '#/components/responses/InternalServerError'
   /users/{userName}:
     parameters:
       - in: path
@@ -148,17 +165,18 @@ paths:
           required: true
       responses:
         '200':
-          description: Username change successfull
-          # Maybe should return userRepr
+          description: Username change successful
         '400':
           description: Unacceptable username
         '401':
-           $ref: '#/components/responses/UnauthorizedError'
+          $ref: '#/components/responses/UnauthorizedError'
         '404':
           description: User not found
         '500':
-           $ref: '#/components/responses/InternalServerError'
+          $ref: '#/components/responses/InternalServerError'
     get:
+      security:
+      - bearerAuth: []
       tags: ["user"]
       summary: Get user profile
       description: |-
@@ -167,11 +185,30 @@ paths:
       responses:
         '200':
           description: Returning user's profile
-          # TODO: return the user and all of his photos
+          # TODO (?): maybe make this a bit more lightweight!
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  photos:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/wholePost"
+                  followers:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/userName"
+                  following:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/userName"
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
         '404':
           description: User not found
         '500':
-           $ref: '#/components/responses/InternalServerError'
+          $ref: '#/components/responses/InternalServerError'
   # I am not at all happy with the current state of the followed and banned users,
   # put/delete operations should create and delete resources, but in this case I 
   # am forced to make them modify the resource... unfortunately though I have to
@@ -203,15 +240,15 @@ paths:
       operationId: followUser
       responses:
         '200':
-          description: Successful addition
+          description: Follow successful
         '401':
-           $ref: '#/components/responses/UnauthorizedError'
+          $ref: '#/components/responses/UnauthorizedError'
         '404':
           description: Self or other user not found
         '409':
           description: Cannot follow self
         '500':
-           $ref: '#/components/responses/InternalServerError'
+          $ref: '#/components/responses/InternalServerError'
     delete:
       security:
       - bearerAuth: []
@@ -222,13 +259,13 @@ paths:
       operationId: unfollowUser
       responses:
         '200':
-          description: Successful removal
+          description: Unfollow successful
         '401':
-           $ref: '#/components/responses/UnauthorizedError'
+          $ref: '#/components/responses/UnauthorizedError'
         '404':
           description: Self or other user not found
         '500':
-           $ref: '#/components/responses/InternalServerError'
+          $ref: '#/components/responses/InternalServerError'
   /users/{userName}/is-banning:
     parameters:
       - in: path
@@ -256,15 +293,15 @@ paths:
       operationId: banUser
       responses:
         '200':
-          description: Successful addition
+          description: Ban successful
         '401':
-           $ref: '#/components/responses/UnauthorizedError'
+          $ref: '#/components/responses/UnauthorizedError'
         '404':
           description: Self or other user not found
         '409':
           description: Cannot ban self
         '500':
-           $ref: '#/components/responses/InternalServerError'
+          $ref: '#/components/responses/InternalServerError'
     delete:
       security:
       - bearerAuth: []  
@@ -275,13 +312,13 @@ paths:
       operationId: unbanUser
       responses:
         '200':
-          description: Successful removal
+          description: Unban successful
         '401':
-           $ref: '#/components/responses/UnauthorizedError'
+          $ref: '#/components/responses/UnauthorizedError'
         '404':
           description: Self or other user not found
         '500':
-           $ref: '#/components/responses/InternalServerError'
+          $ref: '#/components/responses/InternalServerError'
   /users/{userName}/stream:
     parameters:
       - in: path
@@ -305,13 +342,22 @@ paths:
       responses:
         '200':
           description: Here's your stream!
-          # TODO: describe stream
+          # TODO (?): make this more lightweight too?
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  photos:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/wholePost"
         '401':
-           $ref: '#/components/responses/UnauthorizedError'
+          $ref: '#/components/responses/UnauthorizedError'
         '404':
           description: User not found
         '500':
-           $ref: '#/components/responses/InternalServerError'
+          $ref: '#/components/responses/InternalServerError'
   /users/{userName}/photos:
     parameters:
       - in: path
@@ -327,7 +373,7 @@ paths:
     post:
       security:
       - bearerAuth: []  
-      tags: ["post"]
+      tags: ["photo"]
       summary: Post a photo
       description: |-
         Add a post to the user's page
@@ -351,13 +397,13 @@ paths:
               schema:
                 $ref: "#/components/schemas/photoId"
         '401':
-           $ref: '#/components/responses/UnauthorizedError'
+          $ref: '#/components/responses/UnauthorizedError'
         '404':
           description: User not found
         '413':
           description: Photo is too big!
         '500':
-           $ref: '#/components/responses/InternalServerError'
+          $ref: '#/components/responses/InternalServerError'
   /users/{userName}/photos/{photoId}:
     parameters:
       - in: path
@@ -387,11 +433,11 @@ paths:
         '200':
           description: Photo removal successful
         '401':
-           $ref: '#/components/responses/UnauthorizedError'
+          $ref: '#/components/responses/UnauthorizedError'
         '404':
           description: Photo or User not found
         '500':
-           $ref: '#/components/responses/InternalServerError'
+          $ref: '#/components/responses/InternalServerError'
   /users/{userName}/photos/{photoId}/users-likes:
     parameters:
       - in: path
@@ -421,13 +467,13 @@ paths:
         '200':
           description: Successful like
         '401':
-           $ref: '#/components/responses/UnauthorizedError'
+          $ref: '#/components/responses/UnauthorizedError'
         '404':
           description: Photo or User not found
         '409':
           description: Cannot like own photo
         '500':
-           $ref: '#/components/responses/InternalServerError'
+          $ref: '#/components/responses/InternalServerError'
     delete:
       security:
       - bearerAuth: []  
@@ -440,11 +486,11 @@ paths:
         '200':
           description: Successful removal
         '401':
-           $ref: '#/components/responses/UnauthorizedError'
+          $ref: '#/components/responses/UnauthorizedError'
         '404':
           description: Photo or User not found
         '500':
-           $ref: '#/components/responses/InternalServerError'
+          $ref: '#/components/responses/InternalServerError'
   /users/{userName}/photos/{photoId}/comments:
     parameters:
       - in: path
