@@ -33,7 +33,7 @@ components:
       pattern: '^.*?$'
       minLength: 4
       maxLength: 32
-    photo:
+    photoRaw:
       title: Photo representation
       description: How a photo is represented in this application
       type: string
@@ -43,31 +43,31 @@ components:
       #   1- add maximum length (?)
       #   2- IF above, add ability to combine multiple photos
       #     to get arbitrarily sized images
-    postTitle:
+    photoTitle:
       title: Post title
       example: A curious title
       type: string
       minLength: 4
       maxLength: 64
-    postId:
-      title: Post identifier
+    photoId:
+      title: photo identifier
       example: 123456
       type: integer
       format: int64
-    post:
+    photo:
       title: Photo post
       description: A user's photo post
       type: object
       properties:
         id:
-          $ref: "#/components/schemas/postId"
+          $ref: "#/components/schemas/photoId"
         date:
           type: string
           format: date-time
         photo:
-          $ref: "#/components/schemas/photo"
+          $ref: "#/components/schemas/photoRaw"
         title:
-          $ref: "#/components/schemas/postTitle"
+          $ref: "#/components/schemas/photoTitle"
 paths:
   /users:
     post:
@@ -108,6 +108,11 @@ paths:
         schema:
           $ref: "#/components/schemas/userName"
         required: true
+      - in: header
+        name: userId
+        schema:
+          $ref: "#/components/schemas/userId"
+        required: false
     put:
       security:
       - bearerAuth: []
@@ -143,7 +148,7 @@ paths:
       responses:
         '200':
           description: Returning user's profile
-          # TODO: return the user and all of his posts
+          # TODO: return the user and all of his photos
         '404':
           description: User not found
         '500':
@@ -164,6 +169,11 @@ paths:
         schema:
           $ref: "#/components/schemas/userName"
         required: true
+      - in: header
+        name: userId
+        schema:
+          $ref: "#/components/schemas/userId"
+        required: false
     put:
       security:
       - bearerAuth: []
@@ -214,6 +224,11 @@ paths:
         schema:
           $ref: "#/components/schemas/userName"
         required: true
+      - in: header
+        name: userId
+        schema:
+          $ref: "#/components/schemas/userId"
+        required: false
     put:
       security:
       - bearerAuth: []      
@@ -254,11 +269,16 @@ paths:
            $ref: '#/components/responses/InternalServerError'
   /users/{userName}/stream:
     parameters:
-    - in: path
-      name: userName
-      schema:
-        $ref: "#/components/schemas/userName"
-      required: true
+      - in: path
+        name: userName
+        schema:
+          $ref: "#/components/schemas/userName"
+        required: true
+      - in: header
+        name: userId
+        schema:
+          $ref: "#/components/schemas/userId"
+        required: false
     get:
       security:
       - bearerAuth: []  
@@ -277,39 +297,44 @@ paths:
           description: User not found
         '500':
            $ref: '#/components/responses/InternalServerError'
-  /users/{userName}/posts:
+  /users/{userName}/photos:
     parameters:
-    - in: path
-      name: userName
-      schema:
-        $ref: "#/components/schemas/userName"
-      required: true
+      - in: path
+        name: userName
+        schema:
+          $ref: "#/components/schemas/userName"
+        required: true 
+      - in: header
+        name: userId
+        schema:
+          $ref: "#/components/schemas/userId"
+        required: false
     post:
       security:
       - bearerAuth: []  
       tags: ["post"]
-      summary: Post a post
+      summary: Post a photo
       description: |-
         Add a post to the user's page
       operationId: uploadPhoto
       parameters:
         - in: header
-          name: post
+          name: photo
           schema:
             type: object
             properties:
               title:
-                $ref: "#/components/schemas/postTitle"
+                $ref: "#/components/schemas/photoTitle"
               photo:
-                $ref: "#/components/schemas/photo"
+                $ref: "#/components/schemas/photoRaw"
           required: true
       responses:
         '201':
-          description: Successful post
+          description: Successful photo post
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/postId"
+                $ref: "#/components/schemas/photoId"
         '401':
            $ref: '#/components/responses/UnauthorizedError'
         '404':
@@ -318,59 +343,69 @@ paths:
           description: Photo is too big!
         '500':
            $ref: '#/components/responses/InternalServerError'
-  /users/{userName}/posts/{postId}:
+  /users/{userName}/photos/{photoId}:
     parameters:
-    - in: path
-      name: userName
-      schema:
-        $ref: "#/components/schemas/userName"
-      required: true
-    - in: path
-      name: postId
-      schema:
-        $ref: "#/components/schemas/postId"
-      required: true
+      - in: path
+        name: userName
+        schema:
+          $ref: "#/components/schemas/userName"
+        required: true
+      - in: path
+        name: photoId
+        schema:
+          $ref: "#/components/schemas/photoId"
+        required: true
+      - in: header
+        name: userId
+        schema:
+          $ref: "#/components/schemas/userId"
+        required: false
     delete:
       security:
       - bearerAuth: []
-      tags: ["post"]
-      summary: Delete post
+      tags: ["photo"]
+      summary: Delete photo
       description: |-
-        Delete a post and all of its relative stuff (comments, likes, etc.)
+        Delete a photo and all of its relative stuff (comments, likes, etc.)
       operationId: deletePhoto
       responses:
         '200':
-          description: Post removal successful
+          description: Photo removal successful
         '401':
            $ref: '#/components/responses/UnauthorizedError'
         '404':
-          description: User or post not found
+          description: User or photo not found
         '500':
            $ref: '#/components/responses/InternalServerError'
-  /users/{userName}/posts/{postId}/user-likes:
+  /users/{userName}/photos/{photoId}/user-likes:
     parameters:
-    - in: path
-      name: userName
-      schema:
-        $ref: "#/components/schemas/userName"
-      required: true
-    - in: path
-      name: postId
-      schema:
-        $ref: "#/components/schemas/postId"
-      required: true
-    - in: query
-      name: self
-      schema:
-        $ref: "#/components/schemas/userName"
-      required: false
+      - in: path
+        name: userName
+        schema:
+          $ref: "#/components/schemas/userName"
+        required: true
+      - in: path
+        name: photoId
+        schema:
+          $ref: "#/components/schemas/photoId"
+        required: true
+      - in: query
+        name: self
+        schema:
+          $ref: "#/components/schemas/userName"
+        required: false
+      - in: header
+        name: userId
+        schema:
+          $ref: "#/components/schemas/userId"
+        required: false
     put:
       security:
       - bearerAuth: []      
       tags: ["like"]
-      summary: Like post
+      summary: Like photo
       description: |-
-        Put a like on a post (not on yours of course)
+        Put a like on a photo (not on yours of course)
       operationId: likePhoto
       responses:
         '200':
@@ -378,7 +413,7 @@ paths:
         '401':
            $ref: '#/components/responses/UnauthorizedError'
         '404':
-          description: Recipient or post not found
+          description: Recipient or photo not found
         '409':
           description: Cannot like self
         '410':
@@ -389,9 +424,9 @@ paths:
       security:
       - bearerAuth: []  
       tags: ["like"]
-      summary: Un-like post
+      summary: Un-like photo
       description: |-
-        Remove like from a post
+        Remove like from a photo
       operationId: unlikePhoto
       responses:
         '200':
@@ -399,7 +434,7 @@ paths:
         '401':
            $ref: '#/components/responses/UnauthorizedError'
         '404':
-          description: Recipient or post not found
+          description: Recipient or photo not found
         # TODO: decide if to keep 410
         '410':
           description: Self not found
