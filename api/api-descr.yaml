@@ -50,13 +50,13 @@ components:
       minLength: 4
       maxLength: 64
     photoId:
-      title: photo identifier
+      title: Photo identifier
       example: 123456
       type: integer
       format: int64
     photo:
       title: Photo post
-      description: A user's photo post
+      description: A post of a user's photo
       type: object
       properties:
         id:
@@ -68,6 +68,20 @@ components:
           $ref: "#/components/schemas/photoRaw"
         title:
           $ref: "#/components/schemas/photoTitle"
+    comment:
+      title: Comment
+      description: A user's comment under a photo
+      type: object
+      properties:
+        text:
+          type: string
+          minLength: 1
+          maxLength: 256
+        author:
+          $ref: "#/components/schemas/userName"
+        date:
+          type: string
+          format: date-time
 paths:
   /users:
     post:
