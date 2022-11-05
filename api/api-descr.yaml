@@ -44,7 +44,7 @@ components:
       #   2- IF above, add ability to combine multiple photos
       #     to get arbitrarily sized images
     photoTitle:
-      title: Post title
+      title: Photo title
       example: A curious title
       type: string
       minLength: 4
@@ -68,15 +68,19 @@ components:
           $ref: "#/components/schemas/photoRaw"
         title:
           $ref: "#/components/schemas/photoTitle"
+    commentText:
+      title: Comment's Text
+      example: What a nice doggo!
+      type: string
+      minLength: 1
+      maxLength: 256
     comment:
       title: Comment
       description: A user's comment under a photo
       type: object
       properties:
         text:
-          type: string
-          minLength: 1
-          maxLength: 256
+          $ref: "#/components/schemas/commentText"
         author:
           $ref: "#/components/schemas/userName"
         date:
@@ -123,7 +127,7 @@ paths:
           $ref: "#/components/schemas/userName"
         required: true
       - in: header
-        name: userId
+        name: self
         schema:
           $ref: "#/components/schemas/userId"
         required: false
@@ -136,8 +140,8 @@ paths:
         Modifies the user name
       operationId: setMyUserName
       parameters:
-        - in: query
-          name: newUserName
+        - in: header
+          name: newName
           schema:
             $ref: "#/components/schemas/userName"
           required: true
@@ -178,16 +182,16 @@ paths:
         schema:
           $ref: "#/components/schemas/userName"
         required: true
-      - in: query
+      - in: header
+        name: self
+        schema:
+          $ref: "#/components/schemas/userId"
+        required: false
+      - in: header
         name: otherUser
         schema:
           $ref: "#/components/schemas/userName"
         required: true
-      - in: header
-        name: userId
-        schema:
-          $ref: "#/components/schemas/userId"
-        required: false
     put:
       security:
       - bearerAuth: []
@@ -202,11 +206,9 @@ paths:
         '401':
            $ref: '#/components/responses/UnauthorizedError'
         '404':
-          description: User not found
+          description: Self or other user not found
         '409':
           description: Cannot follow self
-        '410':
-          description: Other user not found
         '500':
            $ref: '#/components/responses/InternalServerError'
     delete:
@@ -223,7 +225,7 @@ paths:
         '401':
            $ref: '#/components/responses/UnauthorizedError'
         '404':
-          description: User not found
+          description: Self or other user not found
         '500':
            $ref: '#/components/responses/InternalServerError'
   /users/{userName}/is-banning:
@@ -233,16 +235,16 @@ paths:
         schema:
           $ref: "#/components/schemas/userName"
         required: true
-      - in: query
+      - in: header
+        name: self
+        schema:
+          $ref: "#/components/schemas/userId"
+        required: false
+      - in: header
         name: otherUser
         schema:
           $ref: "#/components/schemas/userName"
         required: true
-      - in: header
-        name: userId
-        schema:
-          $ref: "#/components/schemas/userId"
-        required: false
     put:
       security:
       - bearerAuth: []      
@@ -257,11 +259,9 @@ paths:
         '401':
            $ref: '#/components/responses/UnauthorizedError'
         '404':
-          description: User not found
+          description: Self or other user not found
         '409':
           description: Cannot ban self
-        '410':
-          description: Other user not found
         '500':
            $ref: '#/components/responses/InternalServerError'
     delete:
@@ -278,7 +278,7 @@ paths:
         '401':
            $ref: '#/components/responses/UnauthorizedError'
         '404':
-          description: User not found
+          description: Self or other user not found
         '500':
            $ref: '#/components/responses/InternalServerError'
   /users/{userName}/stream:
@@ -289,7 +289,7 @@ paths:
           $ref: "#/components/schemas/userName"
         required: true
       - in: header
-        name: userId
+        name: self
         schema:
           $ref: "#/components/schemas/userId"
         required: false
@@ -319,7 +319,7 @@ paths:
           $ref: "#/components/schemas/userName"
         required: true 
       - in: header
-        name: userId
+        name: self
         schema:
           $ref: "#/components/schemas/userId"
         required: false
@@ -370,7 +370,7 @@ paths:
           $ref: "#/components/schemas/photoId"
         required: true
       - in: header
-        name: userId
+        name: self
         schema:
           $ref: "#/components/schemas/userId"
         required: false
@@ -388,10 +388,10 @@ paths:
         '401':
            $ref: '#/components/responses/UnauthorizedError'
         '404':
-          description: User or photo not found
+          description: Photo or User not found
         '500':
            $ref: '#/components/responses/InternalServerError'
-  /users/{userName}/photos/{photoId}/user-likes:
+  /users/{userName}/photos/{photoId}/users-likes:
     parameters:
       - in: path
         name: userName
@@ -403,13 +403,8 @@ paths:
         schema:
           $ref: "#/components/schemas/photoId"
         required: true
-      - in: query
-        name: self
-        schema:
-          $ref: "#/components/schemas/userName"
-        required: false
       - in: header
-        name: userId
+        name: self
         schema:
           $ref: "#/components/schemas/userId"
         required: false
@@ -427,11 +422,9 @@ paths:
         '401':
            $ref: '#/components/responses/UnauthorizedError'
         '404':
-          description: Recipient or photo not found
+          description: Photo or User not found
         '409':
-          description: Cannot like self
-        '410':
-          description: Self not found
+          description: Cannot like own photo
         '500':
            $ref: '#/components/responses/InternalServerError'
     delete:
@@ -448,9 +441,49 @@ paths:
         '401':
            $ref: '#/components/responses/UnauthorizedError'
         '404':
-          description: Recipient or photo not found
-        # TODO: decide if to keep 410
-        '410':
-          description: Self not found
+          description: Photo or User not found
         '500':
            $ref: '#/components/responses/InternalServerError'
+  /users/{userName}/photos/{photoId}/comments:
+    parameters:
+      - in: path
+        name: userName
+        schema:
+          $ref: "#/components/schemas/userName"
+        required: true
+      - in: path
+        name: photoId
+        schema:
+          $ref: "#/components/schemas/photoId"
+        required: true
+      - in: header
+        name: self
+        schema:
+          $ref: "#/components/schemas/userId"
+        required: false
+    post:
+      security:
+      - bearerAuth: []
+      tags: ["comment"]
+      summary: Comment photo
+      description: |-
+        Adds a comment under a photo
+      operationId: commentPhoto
+      parameters:
+      - in: header
+        name: text
+        schema:
+          $ref: "#/components/schemas/commentText"
+        required: true
+      responses:
+        '201':
+          description: Comment successful
+          # May have to return some stuff... perhaps a comment id?
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: Photo or User not found
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /users/{userName}/photos/{photoId}/comments/{commentId}:
+    # TODO
