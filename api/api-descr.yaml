@@ -17,61 +17,65 @@ components:
     InternalServerError:
       description: |-
         The server encountered an internal error.
-        Welp...
   schemas:
-    userId:
+    sha256:
+      description: RegEx of a valid sha256
+      example: ed5cbb86c4f4dfcd294c820015cd2c7efb69ba0bd43ed8de743186e34af8c01b
+      type: string
+      pattern: "[A-Fa-f0-9]{64}"
+    userid:
       title: User identifier
-      description: A user's id
-      type: integer
-      example: 90635441
-      format: int64
-    userName:
+      description: A user's id, created with its first name, the date and a salt
+      $ref: "#/components/schemas/sha256"
+    username:
       title: User name
-      description: regex definition of an acceptable username
+      description: RegEx definition of an acceptable username
       type: string
       example: Maria
       pattern: '^.*?$'
       minLength: 4
       maxLength: 32
-    photoRaw:
+    rawphoto:
       title: Photo representation
       description: How a photo is represented in this application
       type: string
       format: binary
       maxLength: 52428800 # 50 MiB
-    photoTitle:
+    title:
       title: Photo title
       example: A curious title
       type: string
       minLength: 4
       maxLength: 64
-    photoId:
+    photoid:
       title: Photo identifier
-      example: 123456
+      description: This can be an incremental value
       type: integer
       format: int64
+      example: 12345678
     photo:
       title: Photo post
       description: A post of a user's photo
       type: object
       properties:
-        id:
-          $ref: "#/components/schemas/photoId"
         date:
           type: string
           format: date-time
         photo:
-          $ref: "#/components/schemas/photoRaw"
+          $ref: "#/components/schemas/rawphoto"
         title:
-          $ref: "#/components/schemas/photoTitle"
-    commentText:
+          $ref: "#/components/schemas/title"
+        author:
+          $ref: "#/components/schemas/username"
+    text:
       title: Comment's Text
       example: What a nice doggo!
       type: string
       minLength: 1
       maxLength: 256
-    commentId:
+    commentid:
       title: Comment identifier
+      description: This can be an incremental value
       example: 1
       type: integer
       format: int64
@@ -81,21 +85,19 @@ components:
       type: object
       properties:
         text:
-          $ref: "#/components/schemas/commentText"
+          $ref: "#/components/schemas/text"
         author:
-          $ref: "#/components/schemas/userName"
+          $ref: "#/components/schemas/username"
         date:
           type: string
           format: date-time
-    wholePost:
+    post:
       title: A whole post
       description: The representation of a full post
       type: object
       properties:
         photo:
           $ref: "#/components/schemas/photo"
-        author:
-          $ref: "#/components/schemas/userName"
         comments:
           type: array
           items:
@@ -103,11 +105,11 @@ components:
         likes:
           type: array
           items:
-            $ref: "#/components/schemas/userName"
+            $ref: "#/components/schemas/username"
 paths:
   /users:
     post:
-      tags: ["login"]
+      tags: ["user"]
       summary: Logs in the user
       description: |-
         If the user does not exist, it will be created,
@@ -118,7 +120,7 @@ paths:
         - in: query
           name: username
           schema:
-            $ref: "#/components/schemas/userName"
+            $ref: "#/components/schemas/username"
           required: true
       responses:
         '200':
@@ -126,29 +128,29 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/userId"
+                $ref: "#/components/schemas/userid"
         '201':
           description: User log-in (registration) action successful
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/userId"
+                $ref: "#/components/schemas/userid"
         '400':
           description: Unacceptable username
         '500':
           $ref: '#/components/responses/InternalServerError'
-  /users/{userName}:
+  /users/{username}:
     parameters:
-      - in: path
-        name: userName
-        schema:
-          $ref: "#/components/schemas/userName"
-        required: true
       - in: header
-        name: self
+        name: token
         schema:
-          $ref: "#/components/schemas/userId"
-        required: false
+          $ref: "#/components/schemas/userid"
+        required: true
+      - in: path
+        name: username
+        schema:
+          $ref: "#/components/schemas/username"
+        required: true
     put:
       security:
       - bearerAuth: []
@@ -159,9 +161,9 @@ paths:
       operationId: setMyUserName
       parameters:
         - in: header
-          name: newName
+          name: new-username
           schema:
-            $ref: "#/components/schemas/userName"
+            $ref: "#/components/schemas/username"
           required: true
       responses:
         '200':
@@ -194,15 +196,15 @@ paths:
                   photos:
                     type: array
                     items:
-                      $ref: "#/components/schemas/wholePost"
+                      $ref: "#/components/schemas/post"
                   followers:
                     type: array
                     items:
-                      $ref: "#/components/schemas/userName"
+                      $ref: "#/components/schemas/username"
                   following:
                     type: array
                     items:
-                      $ref: "#/components/schemas/userName"
+                      $ref: "#/components/schemas/username"
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '404':
@@ -213,27 +215,27 @@ paths:
   # put/delete operations should create and delete resources, but in this case I 
   # am forced to make them modify the resource... unfortunately though I have to
   # provide the operationId's, therefore this.
-  /users/{userName}/is-following:
+  /users/{username}/follows/{otheruser}:
     parameters:
-      - in: path
-        name: userName
+      - in: header
+        name: token
         schema:
-          $ref: "#/components/schemas/userName"
+          $ref: "#/components/schemas/userid"
         required: true
-      - in: header
-        name: self
+      - in: path
+        name: username
         schema:
-          $ref: "#/components/schemas/userId"
-        required: false
-      - in: header
-        name: otherUser
+          $ref: "#/components/schemas/username"
+        required: true
+      - in: path
+        name: otheruser
         schema:
-          $ref: "#/components/schemas/userName"
+          $ref: "#/components/schemas/username"
         required: true
     put:
       security:
       - bearerAuth: []
-      tags: ["follow"]
+      tags: ["user"]
       summary: Follow user
       description: |-
         Follows user if it is not followed (cannot follow self)
@@ -244,7 +246,7 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '404':
-          description: Self or other user not found
+          description: Other or This user not found
         '409':
           description: Cannot follow self
         '500':
@@ -252,7 +254,7 @@ paths:
     delete:
       security:
       - bearerAuth: []
-      tags: ["follow"]
+      tags: ["user"]
       summary: Un-follow user
       description: |-
         Un-follows user if it is followed
@@ -263,30 +265,30 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '404':
-          description: Self or other user not found
+          description: Other or This user not found
         '500':
           $ref: '#/components/responses/InternalServerError'
-  /users/{userName}/is-banning:
+  /users/{username}/bans/{otheruser}:
     parameters:
-      - in: path
-        name: userName
+      - in: header
+        name: token
         schema:
-          $ref: "#/components/schemas/userName"
+          $ref: "#/components/schemas/userid"
         required: true
-      - in: header
-        name: self
+      - in: path
+        name: username
         schema:
-          $ref: "#/components/schemas/userId"
-        required: false
-      - in: header
-        name: otherUser
+          $ref: "#/components/schemas/username"
+        required: true
+      - in: path
+        name: otheruser
         schema:
-          $ref: "#/components/schemas/userName"
+          $ref: "#/components/schemas/username"
         required: true
     put:
       security:
       - bearerAuth: []      
-      tags: ["ban"]
+      tags: ["user"]
       summary: Ban user
       description: |-
         Bans user if it is not yet banned (cannot ban self)
@@ -297,7 +299,7 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '404':
-          description: Self or other user not found
+          description: Other or This user not found
         '409':
           description: Cannot ban self
         '500':
@@ -305,7 +307,7 @@ paths:
     delete:
       security:
       - bearerAuth: []  
-      tags: ["ban"]
+      tags: ["user"]
       summary: Un-ban user
       description: |-
         Un-bans user if it is banned
@@ -316,21 +318,21 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '404':
-          description: Self or other user not found
+          description: Other user not found
         '500':
           $ref: '#/components/responses/InternalServerError'
-  /users/{userName}/stream:
+  /users/{username}/stream:
     parameters:
-      - in: path
-        name: userName
-        schema:
-          $ref: "#/components/schemas/userName"
-        required: true
       - in: header
-        name: self
+        name: token
         schema:
-          $ref: "#/components/schemas/userId"
-        required: false
+          $ref: "#/components/schemas/userid"
+        required: true
+      - in: path
+        name: username
+        schema:
+          $ref: "#/components/schemas/username"
+        required: true
     get:
       security:
       - bearerAuth: []  
@@ -351,32 +353,27 @@ paths:
                   photos:
                     type: array
                     items:
-                      $ref: "#/components/schemas/wholePost"
+                      $ref: "#/components/schemas/post"
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           description: User not found
         '500':
           $ref: '#/components/responses/InternalServerError'
-  /users/{userName}/photos:
+  /photos:
     parameters:
-      - in: path
-        name: userName
-        schema:
-          $ref: "#/components/schemas/userName"
-        required: true 
       - in: header
-        name: self
+        name: token
         schema:
-          $ref: "#/components/schemas/userId"
-        required: false
+          $ref: "#/components/schemas/userid"
+        required: true
     post:
       security:
       - bearerAuth: []  
       tags: ["photo"]
       summary: Post a photo
       description: |-
-        Add a post to the user's page
+        Create a post
       operationId: uploadPhoto
       parameters:
         - in: header
@@ -385,9 +382,9 @@ paths:
             type: object
             properties:
               title:
-                $ref: "#/components/schemas/photoTitle"
+                $ref: "#/components/schemas/title"
               photo:
-                $ref: "#/components/schemas/photoRaw"
+                $ref: "#/components/schemas/rawphoto"
           required: true
       responses:
         '201':
@@ -395,32 +392,25 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/photoId"
+                $ref: "#/components/schemas/photoid"
         '401':
           $ref: '#/components/responses/UnauthorizedError'
-        '404':
-          description: User not found
         '413':
           description: Photo is too big!
         '500':
           $ref: '#/components/responses/InternalServerError'
-  /users/{userName}/photos/{photoId}:
+  /photos/{photo-id}:
     parameters:
       - in: path
-        name: userName
+        name: photo-id
         schema:
-          $ref: "#/components/schemas/userName"
-        required: true
-      - in: path
-        name: photoId
-        schema:
-          $ref: "#/components/schemas/photoId"
+          $ref: "#/components/schemas/photoid"
         required: true
       - in: header
-        name: self
+        name: token
         schema:
-          $ref: "#/components/schemas/userId"
-        required: false
+          $ref: "#/components/schemas/userid"
+        required: true
     delete:
       security:
       - bearerAuth: []
@@ -435,30 +425,30 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '404':
-          description: Photo or User not found
+          description: Photo not found
         '500':
           $ref: '#/components/responses/InternalServerError'
-  /users/{userName}/photos/{photoId}/users-likes:
+  /photos/{photo-id}/likes/{username}:
     parameters:
       - in: path
-        name: userName
+        name: photo-id
         schema:
-          $ref: "#/components/schemas/userName"
+          $ref: "#/components/schemas/photoid"
         required: true
       - in: path
-        name: photoId
+        name: username
         schema:
-          $ref: "#/components/schemas/photoId"
+          $ref: "#/components/schemas/username"
         required: true
       - in: header
-        name: self
+        name: token
         schema:
-          $ref: "#/components/schemas/userId"
-        required: false
+          $ref: "#/components/schemas/userid"
+        required: true
     put:
       security:
       - bearerAuth: []      
-      tags: ["like"]
+      tags: ["photo"]
       summary: Like photo
       description: |-
         Put a like on a photo (not on yours of course)
@@ -476,8 +466,8 @@ paths:
           $ref: '#/components/responses/InternalServerError'
     delete:
       security:
-      - bearerAuth: []  
-      tags: ["like"]
+      - bearerAuth: []
+      tags: ["photo"]
       summary: Un-like photo
       description: |-
         Remove like from a photo
@@ -491,27 +481,22 @@ paths:
           description: Photo or User not found
         '500':
           $ref: '#/components/responses/InternalServerError'
-  /users/{userName}/photos/{photoId}/comments:
+  /photos/{photo-id}/comments:
     parameters:
       - in: path
-        name: userName
+        name: photo-id
         schema:
-          $ref: "#/components/schemas/userName"
-        required: true
-      - in: path
-        name: photoId
-        schema:
-          $ref: "#/components/schemas/photoId"
+          $ref: "#/components/schemas/photoid"
         required: true
       - in: header
-        name: self
+        name: token
         schema:
-          $ref: "#/components/schemas/userId"
-        required: false
+          $ref: "#/components/schemas/userid"
+        required: true
     post:
       security:
       - bearerAuth: []
-      tags: ["comment"]
+      tags: ["photo"]
       summary: Comment photo
       description: |-
         Adds a comment under a photo
@@ -520,7 +505,7 @@ paths:
       - in: header
         name: text
         schema:
-          $ref: "#/components/schemas/commentText"
+          $ref: "#/components/schemas/text"
         required: true
       responses:
         '201':
@@ -528,40 +513,35 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/commentId"
+                $ref: "#/components/schemas/commentid"
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '404':
-          description: Photo or User not found
+          description: Photo not found
         '500':
           $ref: '#/components/responses/InternalServerError'
 
-  /users/{userName}/photos/{photoId}/comments/{commentId}:
+  /photos/{photo-id}/comments/{comment-id}:
     parameters:
       - in: path
-        name: userName
+        name: photo-id
         schema:
-          $ref: "#/components/schemas/userName"
+          $ref: "#/components/schemas/photoid"
         required: true
       - in: path
-        name: photoId
+        name: comment-id
         schema:
-          $ref: "#/components/schemas/photoId"
-        required: true
-      - in: path
-        name: commentId
-        schema:
-          $ref: "#/components/schemas/commentId"
+          $ref: "#/components/schemas/commentid"
         required: true
       - in: header
-        name: self
+        name: token
         schema:
-          $ref: "#/components/schemas/userId"
-        required: false
+          $ref: "#/components/schemas/userid"
+        required: true
     delete:
       security:
       - bearerAuth: []
-      tags: ["comment"]
+      tags: ["photo"]
       summary: Delete comment
       description: |-
         Deletes a comment from a photo's post
@@ -572,6 +552,6 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '404':
-          description: Comment, Photo or User not found
+          description: Comment or Photo not found
         '500':
           $ref: '#/components/responses/InternalServerError'
