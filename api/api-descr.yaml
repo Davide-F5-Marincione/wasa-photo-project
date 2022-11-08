@@ -25,7 +25,13 @@ components:
       pattern: "[A-Fa-f0-9]{64}"
     userid:
       title: User identifier
-      description: A user's id, created with its first name, the date and a salt
+      description: The user identifier, aka an incremental value
+      type: integer
+      format: int64
+      example: 12345678
+    safetytoken:
+      title: User safety token
+      description: A user's safety token, created with its first name, the date and a salt
       $ref: "#/components/schemas/sha256"
     username:
       title: User name
@@ -128,28 +134,74 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/userid"
+                $ref: "#/components/schemas/safetytoken"
         '201':
           description: User log-in (registration) action successful
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/userid"
+                $ref: "#/components/schemas/safetytoken"
         '400':
           description: Unacceptable username
         '500':
           $ref: '#/components/responses/InternalServerError'
-  /users/{username}:
+    get:
+      security:
+      - bearerAuth: []
+      tags: ["user"]
+      summary: Get user profile
+      description: |-
+        Requests a user's profile
+      parameters:
+        - in: header
+          name: token
+          schema:
+            $ref: "#/components/schemas/safetytoken"
+          required: true
+        - in: query
+          name: username
+          schema:
+            $ref: "#/components/schemas/username"
+          required: true
+      operationId: getUserProfile
+      responses:
+        '200':
+          description: Returning user's profile
+          # TODO (?): maybe make this a bit more lightweight!
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  photos:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/post"
+                  followers:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/userid"
+                  following:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/userid"
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: User not found
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /users/{userid}:
     parameters:
       - in: header
         name: token
         schema:
-          $ref: "#/components/schemas/userid"
+          $ref: "#/components/schemas/safetytoken"
         required: true
       - in: path
-        name: username
+        name: userid
         schema:
-          $ref: "#/components/schemas/username"
+          $ref: "#/components/schemas/userid"
         required: true
     put:
       security:
@@ -176,61 +228,22 @@ paths:
           description: User not found
         '500':
           $ref: '#/components/responses/InternalServerError'
-    get:
-      security:
-      - bearerAuth: []
-      tags: ["user"]
-      summary: Get user profile
-      description: |-
-        Requests a user's profile
-      operationId: getUserProfile
-      responses:
-        '200':
-          description: Returning user's profile
-          # TODO (?): maybe make this a bit more lightweight!
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  photos:
-                    type: array
-                    items:
-                      $ref: "#/components/schemas/post"
-                  followers:
-                    type: array
-                    items:
-                      $ref: "#/components/schemas/username"
-                  following:
-                    type: array
-                    items:
-                      $ref: "#/components/schemas/username"
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-        '404':
-          description: User not found
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-  # I am not at all happy with the current state of the followed and banned users,
-  # put/delete operations should create and delete resources, but in this case I 
-  # am forced to make them modify the resource... unfortunately though I have to
-  # provide the operationId's, therefore this.
-  /users/{username}/follows/{otheruser}:
+  /users/{userid}/follows/{otherid}:
     parameters:
       - in: header
         name: token
         schema:
+          $ref: "#/components/schemas/safetytoken"
+        required: true
+      - in: path
+        name: userid
+        schema:
           $ref: "#/components/schemas/userid"
         required: true
       - in: path
-        name: username
+        name: otherid
         schema:
-          $ref: "#/components/schemas/username"
-        required: true
-      - in: path
-        name: otheruser
-        schema:
-          $ref: "#/components/schemas/username"
+          $ref: "#/components/schemas/userid"
         required: true
     put:
       security:
@@ -268,22 +281,22 @@ paths:
           description: Other or This user not found
         '500':
           $ref: '#/components/responses/InternalServerError'
-  /users/{username}/bans/{otheruser}:
+  /users/{userid}/bans/{otherid}:
     parameters:
       - in: header
         name: token
         schema:
+          $ref: "#/components/schemas/safetytoken"
+        required: true
+      - in: path
+        name: userid
+        schema:
           $ref: "#/components/schemas/userid"
         required: true
       - in: path
-        name: username
+        name: otherid
         schema:
-          $ref: "#/components/schemas/username"
-        required: true
-      - in: path
-        name: otheruser
-        schema:
-          $ref: "#/components/schemas/username"
+          $ref: "#/components/schemas/userid"
         required: true
     put:
       security:
@@ -321,17 +334,17 @@ paths:
           description: Other user not found
         '500':
           $ref: '#/components/responses/InternalServerError'
-  /users/{username}/stream:
+  /users/{userid}/stream:
     parameters:
       - in: header
         name: token
         schema:
-          $ref: "#/components/schemas/userid"
+          $ref: "#/components/schemas/safetytoken"
         required: true
       - in: path
-        name: username
+        name: userid
         schema:
-          $ref: "#/components/schemas/username"
+          $ref: "#/components/schemas/userid"
         required: true
     get:
       security:
@@ -365,7 +378,7 @@ paths:
       - in: header
         name: token
         schema:
-          $ref: "#/components/schemas/userid"
+          $ref: "#/components/schemas/safetytoken"
         required: true
     post:
       security:
@@ -409,7 +422,7 @@ paths:
       - in: header
         name: token
         schema:
-          $ref: "#/components/schemas/userid"
+          $ref: "#/components/schemas/safetytoken"
         required: true
     delete:
       security:
@@ -428,7 +441,7 @@ paths:
           description: Photo not found
         '500':
           $ref: '#/components/responses/InternalServerError'
-  /photos/{photo-id}/likes/{username}:
+  /photos/{photo-id}/likes/{userid}:
     parameters:
       - in: path
         name: photo-id
@@ -436,14 +449,14 @@ paths:
           $ref: "#/components/schemas/photoid"
         required: true
       - in: path
-        name: username
+        name: userid
         schema:
-          $ref: "#/components/schemas/username"
+          $ref: "#/components/schemas/userid"
         required: true
       - in: header
         name: token
         schema:
-          $ref: "#/components/schemas/userid"
+          $ref: "#/components/schemas/safetytoken"
         required: true
     put:
       security:
@@ -491,7 +504,7 @@ paths:
       - in: header
         name: token
         schema:
-          $ref: "#/components/schemas/userid"
+          $ref: "#/components/schemas/safetytoken"
         required: true
     post:
       security:
@@ -536,7 +549,7 @@ paths:
       - in: header
         name: token
         schema:
-          $ref: "#/components/schemas/userid"
+          $ref: "#/components/schemas/safetytoken"
         required: true
     delete:
       security:
