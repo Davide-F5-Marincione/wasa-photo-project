@@ -168,7 +168,7 @@ paths:
         since the requesting user may be blocked by the other.
       parameters:
         - in: header
-          name: token
+          name: Authorization
           schema:
             $ref: "#/components/schemas/safetytoken"
           required: true
@@ -208,7 +208,7 @@ paths:
   /users/{userid}:
     parameters:
       - in: header
-        name: token
+        name: Authorization
         schema:
           $ref: "#/components/schemas/safetytoken"
         required: true
@@ -226,7 +226,7 @@ paths:
         Modifies the user name (if the new one is available)
       operationId: setMyUserName
       parameters:
-        - in: header
+        - in: query
           name: new-username
           schema:
             $ref: "#/components/schemas/username"
@@ -245,7 +245,7 @@ paths:
   /users/{userid}/follows/{otherid}:
     parameters:
       - in: header
-        name: token
+        name: Authorization
         schema:
           $ref: "#/components/schemas/safetytoken"
         required: true
@@ -299,7 +299,7 @@ paths:
   /users/{userid}/bans/{otherid}:
     parameters:
       - in: header
-        name: token
+        name: Authorization
         schema:
           $ref: "#/components/schemas/safetytoken"
         required: true
@@ -353,7 +353,7 @@ paths:
   /users/{userid}/stream:
     parameters:
       - in: header
-        name: token
+        name: Authorization
         schema:
           $ref: "#/components/schemas/safetytoken"
         required: true
@@ -392,7 +392,7 @@ paths:
   /photos:
     parameters:
       - in: header
-        name: token
+        name: Authorization
         schema:
           $ref: "#/components/schemas/safetytoken"
         required: true
@@ -404,17 +404,17 @@ paths:
       description: |-
         Create a post and receive its unique id.
       operationId: uploadPhoto
-      parameters:
-        - in: header
-          name: photo
-          schema:
-            type: object
-            properties:
-              title:
-                $ref: "#/components/schemas/title"
-              photo:
-                $ref: "#/components/schemas/rawphoto"
-          required: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  $ref: "#/components/schemas/title"
+                photo:
+                  $ref: "#/components/schemas/rawphoto"
+        required: true
       responses:
         '201':
           description: Successful photo post
@@ -436,7 +436,7 @@ paths:
           $ref: "#/components/schemas/photoid"
         required: true
       - in: header
-        name: token
+        name: Authorization
         schema:
           $ref: "#/components/schemas/safetytoken"
         required: true
@@ -470,7 +470,7 @@ paths:
           $ref: "#/components/schemas/userid"
         required: true
       - in: header
-        name: token
+        name: Authorization
         schema:
           $ref: "#/components/schemas/safetytoken"
         required: true
@@ -519,7 +519,7 @@ paths:
           $ref: "#/components/schemas/photoid"
         required: true
       - in: header
-        name: token
+        name: Authorization
         schema:
           $ref: "#/components/schemas/safetytoken"
         required: true
@@ -531,11 +531,11 @@ paths:
       description: |-
         Adds a comment under a photo, if the user isn't banned by the author
       operationId: commentPhoto
-      parameters:
-      - in: header
-        name: text
-        schema:
-          $ref: "#/components/schemas/text"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/text"
         required: true
       responses:
         '201':
@@ -564,7 +564,7 @@ paths:
           $ref: "#/components/schemas/commentid"
         required: true
       - in: header
-        name: token
+        name: Authorization
         schema:
           $ref: "#/components/schemas/safetytoken"
         required: true
