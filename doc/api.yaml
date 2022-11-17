@@ -42,8 +42,8 @@ components:
       title: User name
       description: |-
         RegEx definition of an acceptable username,
-        aka almost anything. (Thanks prof for the regex)
-        Can change in time (is NOT the same as the handle!)
+        aka almost anything. (Thanks prof for the idea to use regexes)
+        Can change in time (is NOT the same as the handle!).
       type: string
       example: Davide Marincione
       pattern: '^.{4,32}$'
@@ -53,7 +53,7 @@ components:
       title: Photo representation
       description: |-
         How a photo is represented in this application,
-        will probably change in the future versions
+        will probably change in the future versions.
       type: string
       format: binary
       maxLength: 52428800 # 50 MiB
