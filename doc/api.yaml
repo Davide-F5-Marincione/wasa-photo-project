@@ -46,7 +46,7 @@ components:
         Can change in time (is NOT the same as the handle!)
       type: string
       example: Davide Marincione
-      pattern: '^.{4,64}$'
+      pattern: '^.{4,32}$'
       minLength: 4
       maxLength: 32
     rawphoto:
