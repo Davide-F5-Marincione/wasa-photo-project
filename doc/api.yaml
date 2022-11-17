@@ -3,7 +3,7 @@ info:
   title: WASAPhoto
   description: |-
     This is Davide Marincione's API for his WASAPhoto implementation
-  version: '1.0.0'
+  version: '1.0.2'
 servers:
   - url: http://localhost/
 components:
@@ -18,32 +18,35 @@ components:
       description: |-
         The server encountered an internal error.
   schemas:
-    sha256:
-      description: RegEx of a valid sha256 hash value
-      example: ed5cbb86c4f4dfcd294c820015cd2c7efb69ba0bd43ed8de743186e34af8c01b
+    userhandle:
+      title: User handle
+      description: |-
+        The user's handle, public for linking and general purposes with respect to other users,
+        created by the user at registration (and used to login).
+        Is meant to never change (unlike the username) and be unique.
+        Is meant to be of the form <1-27 chars>#<4-nums>.
+        (Btw, inspired from existing videogame naming schemes)
       type: string
-      pattern: "[A-Fa-f0-9]{64}"
-    userid:
-      title: User identifier
-      description: The user identifier, public for linking and general purposes with respect to other users
+      pattern: '^.{1,27}#\d{4}$'
+      example: "davide#7734"
+      minLength: 6
+      maxLength: 32
+    authtoken:
+      title: User authorization token
+      description: |-
+        A user's "authorization token", created at registration and shared at login to the user, is meant to be unique and never change (will probably be a unique random number created by the server).
       type: integer
       format: int64
-      example: 12345678
-    safetytoken:
-      title: User safety token
-      description: |-
-        A user's "safety token", created at registration with its first
-        name on the site, the server's date-time of the registration
-        and some random salt decided by me (probably "42").
-      $ref: "#/components/schemas/sha256"
+      example: 9267501
     username:
       title: User name
       description: |-
         RegEx definition of an acceptable username,
-        aka anything but "\n". (Thanks prof for the regex)
+        aka almost anything. (Thanks prof for the regex)
+        Can change in time (is NOT the same as the handle!)
       type: string
-      example: Maria
-      pattern: '^.*?$'
+      example: Davide Marincione
+      pattern: '^.{4,64}$'
       minLength: 4
       maxLength: 32
     rawphoto:
@@ -57,11 +60,10 @@ components:
     title:
       title: Photo title
       description: |-
-        The title cannot have "\n" inside, therefore
-        we borrow the regex for names.
+        The title's regex
       example: A curious title
       type: string
-      pattern: '^.*?$'
+      pattern: '^.{4,64}$'
       minLength: 4
       maxLength: 64
     photoid:
@@ -85,7 +87,7 @@ components:
         title:
           $ref: "#/components/schemas/title"
         author:
-          $ref: "#/components/schemas/username"
+          $ref: "#/components/schemas/userhandle"
     text:
       title: Comment's Text
       example: What a nice doggo!
@@ -106,7 +108,7 @@ components:
         text:
           $ref: "#/components/schemas/text"
         author:
-          $ref: "#/components/schemas/username"
+          $ref: "#/components/schemas/userhandle"
         date:
           type: string
           format: date-time
@@ -124,7 +126,7 @@ components:
         likes:
           type: array
           items:
-            $ref: "#/components/schemas/username"
+            $ref: "#/components/schemas/userhandle"
 paths:
   /users:
     post:
@@ -132,14 +134,14 @@ paths:
       summary: Logs in the user
       description: |-
         If the user does not exist, it will be created,
-        and an identifier is returned.
-        If the user exists, the user identifier is returned.
+        and an auth token is returned.
+        If the user exists, the user auth. token is returned.
       operationId: doLogin
       parameters:
         - in: query
           name: username
           schema:
-            $ref: "#/components/schemas/username"
+            $ref: "#/components/schemas/userhandle"
           required: true
       responses:
         '200':
@@ -147,13 +149,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/safetytoken"
+                $ref: "#/components/schemas/authtoken"
         '201':
           description: User log-in (registration) action successful
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/safetytoken"
+                $ref: "#/components/schemas/authtoken"
         '400':
           description: Unacceptable username
         '500':
@@ -164,13 +166,13 @@ paths:
       tags: ["user"]
       summary: Get user profile
       description: |-
-        Requests a user's profile via its username, the safety token is needed
+        Requests a user's profile via its username, the auth token is needed
         since the requesting user may be blocked by the other.
       parameters:
         - in: header
           name: Authorization
           schema:
-            $ref: "#/components/schemas/safetytoken"
+            $ref: "#/components/schemas/authtoken"
           required: true
         - in: query
           name: username
@@ -194,28 +196,28 @@ paths:
                   followers:
                     type: array
                     items:
-                      $ref: "#/components/schemas/userid"
+                      $ref: "#/components/schemas/userhandle"
                   following:
                     type: array
                     items:
-                      $ref: "#/components/schemas/userid"
+                      $ref: "#/components/schemas/userhandle"
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           description: User not found
         '500':
           $ref: '#/components/responses/InternalServerError'
-  /users/{userid}:
+  /users/{userhandle}:
     parameters:
       - in: header
         name: Authorization
         schema:
-          $ref: "#/components/schemas/safetytoken"
+          $ref: "#/components/schemas/authtoken"
         required: true
       - in: path
-        name: userid
+        name: userhandle
         schema:
-          $ref: "#/components/schemas/userid"
+          $ref: "#/components/schemas/userhandle"
         required: true
     put:
       security:
@@ -242,22 +244,22 @@ paths:
           description: User not found
         '500':
           $ref: '#/components/responses/InternalServerError'
-  /users/{userid}/follows/{otherid}:
+  /users/{userhandle}/follows/{otherhandle}:
     parameters:
       - in: header
         name: Authorization
         schema:
-          $ref: "#/components/schemas/safetytoken"
+          $ref: "#/components/schemas/authtoken"
         required: true
       - in: path
-        name: userid
+        name: userhandle
         schema:
-          $ref: "#/components/schemas/userid"
+          $ref: "#/components/schemas/userhandle"
         required: true
       - in: path
-        name: otherid
+        name: otherhandle
         schema:
-          $ref: "#/components/schemas/userid"
+          $ref: "#/components/schemas/userhandle"
         required: true
     put:
       security:
@@ -296,22 +298,22 @@ paths:
           description: Other or This user not found
         '500':
           $ref: '#/components/responses/InternalServerError'
-  /users/{userid}/bans/{otherid}:
+  /users/{userhandle}/bans/{otherhandle}:
     parameters:
       - in: header
         name: Authorization
         schema:
-          $ref: "#/components/schemas/safetytoken"
+          $ref: "#/components/schemas/authtoken"
         required: true
       - in: path
-        name: userid
+        name: userhandle
         schema:
-          $ref: "#/components/schemas/userid"
+          $ref: "#/components/schemas/userhandle"
         required: true
       - in: path
-        name: otherid
+        name: otherhandle
         schema:
-          $ref: "#/components/schemas/userid"
+          $ref: "#/components/schemas/userhandle"
         required: true
     put:
       security:
@@ -350,17 +352,17 @@ paths:
           description: Other user not found
         '500':
           $ref: '#/components/responses/InternalServerError'
-  /users/{userid}/stream:
+  /users/{userhandle}/stream:
     parameters:
       - in: header
         name: Authorization
         schema:
-          $ref: "#/components/schemas/safetytoken"
+          $ref: "#/components/schemas/authtoken"
         required: true
       - in: path
-        name: userid
+        name: userhandle
         schema:
-          $ref: "#/components/schemas/userid"
+          $ref: "#/components/schemas/userhandle"
         required: true
     get:
       security:
@@ -394,7 +396,7 @@ paths:
       - in: header
         name: Authorization
         schema:
-          $ref: "#/components/schemas/safetytoken"
+          $ref: "#/components/schemas/authtoken"
         required: true
     post:
       security:
@@ -438,7 +440,7 @@ paths:
       - in: header
         name: Authorization
         schema:
-          $ref: "#/components/schemas/safetytoken"
+          $ref: "#/components/schemas/authtoken"
         required: true
     delete:
       security:
@@ -457,7 +459,7 @@ paths:
           description: Photo not found
         '500':
           $ref: '#/components/responses/InternalServerError'
-  /photos/{photo-id}/likes/{userid}:
+  /photos/{photo-id}/likes/{userhandle}:
     parameters:
       - in: path
         name: photo-id
@@ -465,14 +467,14 @@ paths:
           $ref: "#/components/schemas/photoid"
         required: true
       - in: path
-        name: userid
+        name: userhandle
         schema:
-          $ref: "#/components/schemas/userid"
+          $ref: "#/components/schemas/userhandle"
         required: true
       - in: header
         name: Authorization
         schema:
-          $ref: "#/components/schemas/safetytoken"
+          $ref: "#/components/schemas/authtoken"
         required: true
     put:
       security:
@@ -521,7 +523,7 @@ paths:
       - in: header
         name: Authorization
         schema:
-          $ref: "#/components/schemas/safetytoken"
+          $ref: "#/components/schemas/authtoken"
         required: true
     post:
       security:
@@ -566,7 +568,7 @@ paths:
       - in: header
         name: Authorization
         schema:
-          $ref: "#/components/schemas/safetytoken"
+          $ref: "#/components/schemas/authtoken"
         required: true
     delete:
       security:
