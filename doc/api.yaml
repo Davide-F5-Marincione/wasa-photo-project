@@ -224,13 +224,8 @@ paths:
             $ref: "#/components/schemas/username"
           required: true
       responses:
-        '200':
+        '204':
           description: Username change successful
-          content:
-            application/json:
-              schema:
-                type: string
-                example: NewNameHere
         '400':
           description: Unacceptable username
         '401':
@@ -260,7 +255,7 @@ paths:
         Follows user if it is not followed (cannot follow self)
       operationId: followUser
       responses:
-        '200':
+        '204':
           description: Follow successful
         '401':
           $ref: '#/components/responses/UnauthorizedError'
@@ -280,7 +275,7 @@ paths:
         followed in the first place)
       operationId: unfollowUser
       responses:
-        '200':
+        '204':
           description: Unfollow successful
         '401':
           $ref: '#/components/responses/UnauthorizedError'
@@ -309,7 +304,7 @@ paths:
         Bans user if it is not yet banned (cannot ban self)
       operationId: banUser
       responses:
-        '200':
+        '204':
           description: Ban successful
         '401':
           $ref: '#/components/responses/UnauthorizedError'
@@ -329,7 +324,7 @@ paths:
         banned in the first place)
       operationId: unbanUser
       responses:
-        '200':
+        '204':
           description: Unban successful
         '401':
           $ref: '#/components/responses/UnauthorizedError'
@@ -420,7 +415,7 @@ paths:
         Delete a photo and all of its relative resources (comments, likes, etc.)
       operationId: deletePhoto
       responses:
-        '200':
+        '204':
           description: Photo removal successful
         '401':
           $ref: '#/components/responses/UnauthorizedError'
@@ -449,7 +444,7 @@ paths:
         Put like on a photo (not on yours of course)
       operationId: likePhoto
       responses:
-        '200':
+        '204':
           description: Successful like
         '401':
           $ref: '#/components/responses/UnauthorizedError'
@@ -469,7 +464,7 @@ paths:
         in the first place)
       operationId: unlikePhoto
       responses:
-        '200':
+        '204':
           description: Successful removal
         '401':
           $ref: '#/components/responses/UnauthorizedError'
@@ -533,7 +528,7 @@ paths:
         Deletes a comment from a photo's post, returns 404 error if the comment is not found (unlike likes, follows and bans!)
       operationId: uncommentPhoto
       responses:
-        '200':
+        '204':
           description: Comment delete successful
         '401':
           $ref: '#/components/responses/UnauthorizedError'
