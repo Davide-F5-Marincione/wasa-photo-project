@@ -90,6 +90,7 @@ components:
           $ref: "#/components/schemas/userhandle"
     text:
       title: Comment's Text
+      description: A comment, it must be not longer than 256 characters.
       example: What a nice doggo!
       type: string
       minLength: 1
@@ -182,20 +183,24 @@ paths:
           content:
             application/json:
               schema:
+                description: The full representation of a profile
                 type: object
                 properties:
                   photos:
                     type: array
                     items:
                       $ref: "#/components/schemas/post"
+                    minLength: 0
                   followers:
                     type: array
                     items:
                       $ref: "#/components/schemas/userhandle"
+                    minLength: 0
                   following:
                     type: array
                     items:
                       $ref: "#/components/schemas/userhandle"
+                    minLength: 0
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '404':
@@ -354,12 +359,14 @@ paths:
           content:
             application/json:
               schema:
+                description: The representation of a stream, aka a list of posts.
                 type: object
                 properties:
                   photos:
                     type: array
                     items:
                       $ref: "#/components/schemas/post"
+                    minLength: 0
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '404':
@@ -379,6 +386,9 @@ paths:
         content:
           application/json:
             schema:
+              description: |-
+                A photo upload, the author and the datetime is inserted by
+                the server, therefore only the title and the photo are requested.
               type: object
               properties:
                 title:
