@@ -6,6 +6,13 @@ info:
   version: '1.0.2'
 servers:
   - url: http://localhost
+tags:
+  - name: user
+    description: All the stuff related to the user/s
+  - name: stream
+    description: All the stuff related to the stream
+  - name: photo
+    description: All the stuff related to photos/posts
 components:
   securitySchemes:
     bearerAuth:            # arbitrary name for the security scheme
@@ -56,6 +63,7 @@ components:
         will probably change in the future versions.
       type: string
       format: binary
+      minLength: 0        # Uhhh... what is the smallest size for an image?
       maxLength: 52428800 # 50 MiB
     title:
       title: Photo title
@@ -93,6 +101,7 @@ components:
       description: A comment, it must be not longer than 256 characters.
       example: What a nice doggo!
       type: string
+      pattern: ^.+$
       minLength: 1
       maxLength: 256
     commentid:
@@ -128,6 +137,36 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/userhandle"
+    stream:
+      title: A stream
+      description: The representation of a stream, aka a list of posts.
+      type: object
+      properties:
+        photos:
+          type: array
+          items:
+            $ref: "#/components/schemas/post"
+          minLength: 0
+    profile:
+      title: A profile
+      description: The full representation of a profile
+      type: object
+      properties:
+        photos:
+          type: array
+          items:
+            $ref: "#/components/schemas/post"
+          minLength: 0
+        followers:
+          type: array
+          items:
+            $ref: "#/components/schemas/userhandle"
+          minLength: 0
+        following:
+          type: array
+          items:
+            $ref: "#/components/schemas/userhandle"
+          minLength: 0
 paths:
   /users:
     post:
@@ -183,24 +222,7 @@ paths:
           content:
             application/json:
               schema:
-                description: The full representation of a profile
-                type: object
-                properties:
-                  photos:
-                    type: array
-                    items:
-                      $ref: "#/components/schemas/post"
-                    minLength: 0
-                  followers:
-                    type: array
-                    items:
-                      $ref: "#/components/schemas/userhandle"
-                    minLength: 0
-                  following:
-                    type: array
-                    items:
-                      $ref: "#/components/schemas/userhandle"
-                    minLength: 0
+                $ref: "#/components/schemas/profile"
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '404':
@@ -359,14 +381,7 @@ paths:
           content:
             application/json:
               schema:
-                description: The representation of a stream, aka a list of posts.
-                type: object
-                properties:
-                  photos:
-                    type: array
-                    items:
-                      $ref: "#/components/schemas/post"
-                    minLength: 0
+                $ref: "#/components/schemas/stream"
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '404':
