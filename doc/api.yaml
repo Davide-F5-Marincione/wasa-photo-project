@@ -127,16 +127,16 @@ components:
       description: The representation of a full post
       type: object
       properties:
-        photo:
-          $ref: "#/components/schemas/photo"
         comments:
           type: array
           items:
             $ref: "#/components/schemas/comment"
+          minItems: 0
         likes:
           type: array
           items:
             $ref: "#/components/schemas/userhandle"
+          minItems: 0
     stream:
       title: A stream
       description: The representation of a stream, aka a list of posts.
@@ -145,8 +145,8 @@ components:
         photos:
           type: array
           items:
-            $ref: "#/components/schemas/post"
-          minLength: 0
+            $ref: "#/components/schemas/photoid"
+          minItems: 0
     profile:
       title: A profile
       description: The full representation of a profile
@@ -155,18 +155,18 @@ components:
         photos:
           type: array
           items:
-            $ref: "#/components/schemas/post"
-          minLength: 0
+            $ref: "#/components/schemas/photoid"
+          minItems: 0
         followers:
           type: array
           items:
             $ref: "#/components/schemas/userhandle"
-          minLength: 0
+          minItems: 0
         following:
           type: array
           items:
             $ref: "#/components/schemas/userhandle"
-          minLength: 0
+          minItems: 0
 paths:
   /users:
     post:
@@ -399,7 +399,7 @@ paths:
       operationId: uploadPhoto
       requestBody:
         content:
-          application/json:
+          multipart/form-data:
             schema:
               description: |-
                 A photo upload, the author and the datetime is inserted by
@@ -442,6 +442,34 @@ paths:
       responses:
         '204':
           description: Photo removal successful
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: Photo not found
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /photos/{photo-id}/raw:
+    parameters:
+      - in: path
+        name: photo-id
+        schema:
+          $ref: "#/components/schemas/photoid"
+        required: true
+    get:
+      security:
+      - bearerAuth: []
+      tags: ["photo"]
+      summary: Get the actual photo
+      description: |-
+        Gets the actual photo, as a jpeg to keep it small (we assume every phot is being converted and compressed to jpeg at upload time)
+      operationId: getRawPhoto
+      responses:
+        '200':
+          description: Here's the photo
+          content:
+            image/jpeg:
+              schema:
+                $ref: "#/components/schemas/rawphoto"
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '404':
