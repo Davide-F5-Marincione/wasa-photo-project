@@ -461,13 +461,13 @@ paths:
       tags: ["photo"]
       summary: Get the actual photo
       description: |-
-        Gets the actual photo, as a jpeg to keep it small (we assume every phot is being converted and compressed to jpeg at upload time)
+        Gets the actual photo, as a png (we assume every photo is being uploaded as png)
       operationId: getRawPhoto
       responses:
         '200':
           description: Here's the photo
           content:
-            image/jpeg:
+            image/png:
               schema:
                 $ref: "#/components/schemas/rawphoto"
         '401':
