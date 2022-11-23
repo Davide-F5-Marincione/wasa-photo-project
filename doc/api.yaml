@@ -12,7 +12,7 @@ tags:
   - name: stream
     description: All the stuff related to the stream
   - name: photo
-    description: All the stuff related to photos/posts
+    description: All the stuff related to photos
 components:
   securitySchemes:
     bearerAuth:            # arbitrary name for the security scheme
@@ -25,19 +25,6 @@ components:
       description: |-
         The server encountered an internal error.
   schemas:
-    userhandle:
-      title: User handle
-      description: |-
-        The user's handle, public for linking and general purposes with respect to other users,
-        created by the user at registration (and used to login).
-        Is meant to never change (unlike the username) and be unique.
-        Is meant to be of the form <1-27 chars>#<4-nums>.
-        (Btw, inspired from existing videogame naming schemes)
-      type: string
-      pattern: '^.{1,27}#\d{4}$'
-      example: "davide#7734"
-      minLength: 6
-      maxLength: 32
     authtoken:
       title: User authorization token
       description: |-
@@ -56,6 +43,60 @@ components:
       pattern: '^.{4,32}$'
       minLength: 4
       maxLength: 32
+    userhandle:
+      title: User handle
+      description: |-
+        The user's handle, public for linking and general purposes with respect to other users,
+        created by the user at registration (and used to login).
+        Is meant to never change (unlike the username) and be unique.
+        Is meant to be of the form <1-27 chars>#<4-nums>.
+        (Btw, inspired from existing videogame naming schemes)
+      type: string
+      pattern: '^.{1,27}#\d{4}$'
+      example: "davide#7734"
+      minLength: 6
+      maxLength: 32
+    handlesbatch:
+      title: Batch of handles
+      description: |-
+        Since a list of handles is useful in situations
+        where arbitrary number of users may be listed
+        (such as to return list of followers,
+        a following, banned users or those who've
+        put a like on a photo) but, at the same time,
+        arbitrarily long lists are unacceptable, it is
+        paramount to produce and handle (no pun intended)
+        arbitrary lists of users via fixed size batches.
+        The idea being that, since in no case we need to
+        produce lists of handles in a particular order, we 
+        decree they will be handled via lexicographic
+        order for semplicity.
+
+        It is assumed that any request for this kind of
+        batches will either:
+    
+          a. Request with a "base", leading to a response
+          containing handles whose values are strictly larger
+          than the "base".
+  
+          b. Request with no "base", leading to a response
+          containing handles whose values are the smallest.
+      
+        For every case of handling lists of userhandles it is
+        assumed that, from the client side, the "base" will
+        be set equal to the last element in the list received
+        for the same functionality.
+
+        Last detail is that, since the client will likely cache the
+        elements of the list to save on network usage, the final
+        list may not reflect the actual state on the server-
+        this is an acceptable compromise.
+      type: array
+      items:
+        $ref: "#/components/schemas/userhandle"
+      minItems: 0
+      maxItems: 64
+
     rawphoto:
       title: Photo representation
       description: |-
@@ -65,6 +106,13 @@ components:
       format: binary
       minLength: 0        # Uhhh... what is the smallest size for an image?
       maxLength: 52428800 # 50 MiB
+    photoid:
+      title: Photo identifier
+      description: |-
+        This is a global and unique incremental value
+      type: integer
+      format: int64
+      example: 1
     title:
       title: Photo title
       description: |-
@@ -74,28 +122,48 @@ components:
       pattern: '^.{4,64}$'
       minLength: 4
       maxLength: 64
-    photoid:
-      title: Photo identifier
+    photosbatch:
+      title: Batch of photo ids
       description: |-
-        This can be an incremental value
+        Like the situation with lists of userhandles,
+        an arbitrary sized list of photo ids may be
+        useful to handle a user's stream or the view
+        of a profile- since photo ids are distributed
+        in a unique incremental fashion, which conviniently
+        follows the reverse chronological order, we can order
+        them by their descending value.
+
+        Therefore it is assumed that any request for this
+        kind of batches will either:
+
+          a. Request with a "limit", leading to a response
+          containing a batch of elements whose values
+          are strictly smaller than the "limit".
+
+          b. Request with no "limit", leading to a response
+          containing a batch of ids whose values are the biggest.
+
+        For any case of handling lists of photo ids it is assumed
+        that, from the client side, the "limit" will be set equal
+        to the last element in the list received for the same
+        functionality.
+
+        Like the problem with live-updating the list in the
+        user handles, we have to accept an half-measure where
+        the list may not fully represent the server state-
+        this, again, is an acceptable compromise.
+      type: array
+      items:
+        $ref: "#/components/schemas/photoid"
+      minItems: 0
+      maxItems: 64
+    
+    commentid:
+      title: Comment identifier
+      description: This is an incremental value local to a photo
+      example: 1
       type: integer
       format: int64
-      example: 12345678
-    photo:
-      title: Photo post
-      description: |-
-        A post of a user's photo
-      type: object
-      properties:
-        date:
-          type: string
-          format: date-time
-        photo:
-          $ref: "#/components/schemas/rawphoto"
-        title:
-          $ref: "#/components/schemas/title"
-        author:
-          $ref: "#/components/schemas/userhandle"
     text:
       title: Comment's Text
       description: A comment, it must be not longer than 256 characters.
@@ -104,12 +172,6 @@ components:
       pattern: ^.+$
       minLength: 1
       maxLength: 256
-    commentid:
-      title: Comment identifier
-      description: This can be an incremental value
-      example: 1
-      type: integer
-      format: int64
     comment:
       title: Comment
       description: A user's comment under a photo
@@ -122,51 +184,89 @@ components:
         date:
           type: string
           format: date-time
-    post:
-      title: A whole post
-      description: The representation of a full post
+        id:
+          $ref: "#/components/schemas/commentid"
+    commentsbatch:
+      title: Batch of comments
+      description: |-
+        Under photos an arbitrary number of comments
+        may be generated, therefore it is needed
+        to handle them through batches: like the photo ids,
+        since we are interested in the reverse
+        chronological order of the comments, which is "conviniently"
+        equal to a unique incremental numbering of them,
+        we'll handle comments by their descending ids.
+
+        Differently than photos, a list 
+        of comments will contain actual comments in their
+        full representation instead of their simple ids.
+
+        Therefore it is assumed that any request for this
+        kind of batches will either:
+
+          a. Request with a "limit", leading to a response
+          containing a batch of elements whose values
+          are strictly smaller than the "limit".
+
+          b. Request with no "limit", leading to a response
+          containing a batch of ids whose values are the biggest.
+
+        For any case of handling lists of comments it is assumed
+        that, from the client side, the "limit" will be set equal
+        to the last element in the list received for the same
+        functionality.
+
+        Again, we make the compromise with live-udpates on the server.
+      
+      type: array
+      items:
+        $ref: "#/components/schemas/comment"
+      minItems: 0
+      maxItems: 64
+  
+    photo:
+      title: Whole photo
+      description: The response to a photo request
       type: object
       properties:
+        title:
+          $ref: "#/components/schemas/title"
+        author:
+          $ref: "#/components/schemas/userhandle"
         comments:
-          type: array
-          items:
-            $ref: "#/components/schemas/comment"
-          minItems: 0
+          $ref: "#/components/schemas/commentsbatch"
         likes:
-          type: array
-          items:
-            $ref: "#/components/schemas/userhandle"
-          minItems: 0
-    stream:
-      title: A stream
-      description: The representation of a stream, aka a list of posts.
-      type: object
-      properties:
-        photos:
-          type: array
-          items:
-            $ref: "#/components/schemas/photoid"
-          minItems: 0
+          $ref: "#/components/schemas/handlesbatch"
+        uploaddate:
+          type: string
+          format: date-time
+  
     profile:
-      title: A profile
-      description: The full representation of a profile
+      title: Profile
+      description: The response to a profile request
       type: object
       properties:
         photos:
-          type: array
-          items:
-            $ref: "#/components/schemas/photoid"
-          minItems: 0
+          $ref: "#/components/schemas/photosbatch"
         followers:
-          type: array
-          items:
-            $ref: "#/components/schemas/userhandle"
-          minItems: 0
+          $ref: "#/components/schemas/handlesbatch"
         following:
-          type: array
-          items:
-            $ref: "#/components/schemas/userhandle"
-          minItems: 0
+          $ref: "#/components/schemas/handlesbatch"
+
+    loginresponse:
+      title: Login response
+      description: |-
+        The response to a login, with both the handle, the username
+        and the authtoken. For good measure
+      type: object
+      properties:
+        photos:
+          $ref: "#/components/schemas/username"
+        followers:
+          $ref: "#/components/schemas/userhandle"
+        following:
+          $ref: "#/components/schemas/authtoken"
+  
 paths:
   /users:
     post:
@@ -179,7 +279,7 @@ paths:
       operationId: doLogin
       parameters:
         - in: query
-          name: username
+          name: user-handle
           schema:
             $ref: "#/components/schemas/userhandle"
           required: true
@@ -189,13 +289,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/authtoken"
+                $ref: "#/components/schemas/loginresponse"
         '201':
           description: User log-in (registration) action successful
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/authtoken"
+                $ref: "#/components/schemas/loginresponse"
         '400':
           description: Unacceptable username
         '500':
@@ -214,11 +314,25 @@ paths:
           schema:
             $ref: "#/components/schemas/username"
           required: true
+        - in: query
+          name: photoslimit
+          schema:
+            $ref: "#/components/schemas/photoid"
+          required: false
+        - in: query
+          name: followersbase
+          schema:
+            $ref: "#/components/schemas/userhandle"
+          required: false
+        - in: query
+          name: followingbase
+          schema:
+            $ref: "#/components/schemas/userhandle"
+          required: false
       operationId: getUserProfile
       responses:
         '200':
           description: Returning user's profile
-          # TODO (?): maybe make this a bit more lightweight!
           content:
             application/json:
               schema:
@@ -229,10 +343,10 @@ paths:
           description: User not found
         '500':
           $ref: '#/components/responses/InternalServerError'
-  /users/{userhandle}:
+  /users/{user-handle}:
     parameters:
       - in: path
-        name: userhandle
+        name: user-handle
         schema:
           $ref: "#/components/schemas/userhandle"
         required: true
@@ -261,15 +375,15 @@ paths:
           description: User not found
         '500':
           $ref: '#/components/responses/InternalServerError'
-  /users/{userhandle}/follows/{otherhandle}:
+  /users/{user-handle}/follows/{other-handle}:
     parameters:
       - in: path
-        name: userhandle
+        name: user-handle
         schema:
           $ref: "#/components/schemas/userhandle"
         required: true
       - in: path
-        name: otherhandle
+        name: other-handle
         schema:
           $ref: "#/components/schemas/userhandle"
         required: true
@@ -310,15 +424,15 @@ paths:
           description: Other or This user not found
         '500':
           $ref: '#/components/responses/InternalServerError'
-  /users/{userhandle}/bans/{otherhandle}:
+  /users/{user-handle}/bans/{other-handle}:
     parameters:
       - in: path
-        name: userhandle
+        name: user-handle
         schema:
           $ref: "#/components/schemas/userhandle"
         required: true
       - in: path
-        name: otherhandle
+        name: other-handle
         schema:
           $ref: "#/components/schemas/userhandle"
         required: true
@@ -359,10 +473,10 @@ paths:
           description: Other user not found
         '500':
           $ref: '#/components/responses/InternalServerError'
-  /users/{userhandle}/stream:
+  /users/{user-handle}/stream:
     parameters:
       - in: path
-        name: userhandle
+        name: user-handle
         schema:
           $ref: "#/components/schemas/userhandle"
         required: true
@@ -374,14 +488,19 @@ paths:
       description: |-
         Receive the user's stream filled with info from the people they follow
       operationId: getMyStream
+      parameters:
+        - in: query
+          name: photoslimit
+          schema:
+            $ref: "#/components/schemas/photoid"
+          required: false
       responses:
         '200':
           description: Here's your stream!
-          # TODO (?): make this more lightweight too?
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/stream"
+                $ref: "#/components/schemas/photosbatch"
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '404':
@@ -448,6 +567,39 @@ paths:
           description: Photo not found
         '500':
           $ref: '#/components/responses/InternalServerError'
+    get:
+      security:
+      - bearerAuth: []
+      tags: ["photo"]
+      summary: Get a whole photo post and info
+      description: |-
+        Requests a photo and all its related stuff:
+        like the author, the likes, the comments, etc.
+      parameters:
+        - in: query
+          name: commentslimit
+          schema:
+            $ref: "#/components/schemas/commentid"
+          required: false
+        - in: query
+          name: likesbase
+          schema:
+            $ref: "#/components/schemas/userhandle"
+          required: false
+      operationId: getPhotoPost
+      responses:
+        '200':
+          description: Returning photo post
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/photo"
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: User not found
+        '500':
+          $ref: '#/components/responses/InternalServerError'
   /photos/{photo-id}/raw:
     parameters:
       - in: path
@@ -476,7 +628,7 @@ paths:
           description: Photo not found
         '500':
           $ref: '#/components/responses/InternalServerError'
-  /photos/{photo-id}/likes/{userhandle}:
+  /photos/{photo-id}/likes/{user-handle}:
     parameters:
       - in: path
         name: photo-id
@@ -484,7 +636,7 @@ paths:
           $ref: "#/components/schemas/photoid"
         required: true
       - in: path
-        name: userhandle
+        name: user-handle
         schema:
           $ref: "#/components/schemas/userhandle"
         required: true
