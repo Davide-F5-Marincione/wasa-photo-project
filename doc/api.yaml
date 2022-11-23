@@ -244,12 +244,12 @@ paths:
       description: |-
         Modifies the user name (if the new one is available)
       operationId: setMyUserName
-      parameters:
-        - in: query
-          name: new-username
-          schema:
-            $ref: "#/components/schemas/username"
-          required: true
+      requestBody:
+        content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/username"
+        required: true
       responses:
         '204':
           description: Username change successful
