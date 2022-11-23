@@ -183,6 +183,7 @@ components:
           $ref: "#/components/schemas/userhandle"
         date:
           type: string
+          description: Date of upload of the comment
           format: date-time
         id:
           $ref: "#/components/schemas/commentid"
@@ -237,8 +238,9 @@ components:
           $ref: "#/components/schemas/commentsbatch"
         likes:
           $ref: "#/components/schemas/handlesbatch"
-        uploaddate:
+        date:
           type: string
+          description: Date of upload of the photo
           format: date-time
   
     profile:
