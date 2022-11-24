@@ -177,15 +177,15 @@ components:
       description: A user's comment under a photo
       type: object
       properties:
-        text:
+        comment-text:
           $ref: "#/components/schemas/text"
-        author:
+        comment-author:
           $ref: "#/components/schemas/userhandle"
-        date:
+        comment-date:
           type: string
           description: Date of upload of the comment
           format: date-time
-        id:
+        comment-id:
           $ref: "#/components/schemas/commentid"
     commentsbatch:
       title: Batch of comments
@@ -230,15 +230,15 @@ components:
       description: The response to a photo request
       type: object
       properties:
-        title:
+        photo-title:
           $ref: "#/components/schemas/title"
-        author:
+        photo-author:
           $ref: "#/components/schemas/userhandle"
-        comments:
+        comments-running-batch:
           $ref: "#/components/schemas/commentsbatch"
-        likes:
+        likes-running-batch:
           $ref: "#/components/schemas/handlesbatch"
-        date:
+        photo-date:
           type: string
           description: Date of upload of the photo
           format: date-time
@@ -248,11 +248,11 @@ components:
       description: The response to a profile request
       type: object
       properties:
-        photos:
+        photos-running-batch:
           $ref: "#/components/schemas/photosbatch"
-        followers:
+        followers-running-batch:
           $ref: "#/components/schemas/handlesbatch"
-        following:
+        following-running-batch:
           $ref: "#/components/schemas/handlesbatch"
 
     loginresponse:
@@ -262,11 +262,11 @@ components:
         and the authtoken. For good measure
       type: object
       properties:
-        photos:
+        resp-username:
           $ref: "#/components/schemas/username"
-        followers:
+        resp-userhandle:
           $ref: "#/components/schemas/userhandle"
-        following:
+        resp-authtoken:
           $ref: "#/components/schemas/authtoken"
   
 paths:
@@ -312,22 +312,22 @@ paths:
         since the requesting user may be blocked by the other.
       parameters:
         - in: query
-          name: username
+          name: user-name
           schema:
             $ref: "#/components/schemas/username"
           required: true
         - in: query
-          name: photoslimit
+          name: photos-limit
           schema:
             $ref: "#/components/schemas/photoid"
           required: false
         - in: query
-          name: followersbase
+          name: followers-base
           schema:
             $ref: "#/components/schemas/userhandle"
           required: false
         - in: query
-          name: followingbase
+          name: following-base
           schema:
             $ref: "#/components/schemas/userhandle"
           required: false
@@ -492,7 +492,7 @@ paths:
       operationId: getMyStream
       parameters:
         - in: query
-          name: photoslimit
+          name: photos-limit
           schema:
             $ref: "#/components/schemas/photoid"
           required: false
@@ -579,12 +579,12 @@ paths:
         like the author, the likes, the comments, etc.
       parameters:
         - in: query
-          name: commentslimit
+          name: comments-limit
           schema:
             $ref: "#/components/schemas/commentid"
           required: false
         - in: query
-          name: likesbase
+          name: likes-base
           schema:
             $ref: "#/components/schemas/userhandle"
           required: false
