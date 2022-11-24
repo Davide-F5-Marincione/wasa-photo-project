@@ -174,7 +174,7 @@ func run() error {
 
 		// Log the status of this shutdown.
 		switch {
-		case sig == syscall.Signal(0x13): // Change from SIGSTOP to this was suggested by Konst. This is the actual code for SIGSTOP, and the linter won't complain
+		case sig == syscall.Signal(0x13): // Change from SIGSTOP to this. Was suggested by Konst. This is the actual code for SIGSTOP and the linter won't complain
 			return errors.New("integrity issue caused shutdown")
 		case err != nil:
 			return fmt.Errorf("could not stop server gracefully: %w", err)
