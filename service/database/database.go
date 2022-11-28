@@ -34,6 +34,9 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"io/ioutil"
+
+	"git.sapienzaapps.it/fantasticcoffee/fantastic-coffee-decaffeinated/vendor/gopkg.in/yaml.v2"
 )
 
 // AppDatabase is the high level interface for the DB
@@ -55,14 +58,28 @@ func New(db *sql.DB) (AppDatabase, error) {
 		return nil, errors.New("database is required when building a AppDatabase")
 	}
 
+	// Load tables from db_setup.yaml
+	setup_file, err := ioutil.ReadFile("db_setup.yaml ")
+	if err != nil {
+		return nil, fmt.Errorf("error loading database description from file: %w", err)
+	}
+
+	setup_map := make(map[string]map[string]string) // Don't think i'll pass something more than strings
+
+	err = yaml.Unmarshal(setup_file, &setup_map)
+
+	if err != nil {
+		return nil, fmt.Errorf("error parsing database description from file: %w", err)
+	}
+
 	// Check if table exists. If not, the database is empty, and we need to create the structure
-	var tableName string
-	err := db.QueryRow(`SELECT name FROM sqlite_master WHERE type='table' AND name='example_table';`).Scan(&tableName)
-	if errors.Is(err, sql.ErrNoRows) {
-		sqlStmt := `CREATE TABLE example_table (id INTEGER NOT NULL PRIMARY KEY, name TEXT);`
-		_, err = db.Exec(sqlStmt)
-		if err != nil {
-			return nil, fmt.Errorf("error creating database structure: %w", err)
+	for tableName, tableDef := range setup_map["tables"] {
+		err := db.QueryRow("SELECT name FROM sqlite_master WHERE type='table' AND name='" + tableName + "';").Scan(&tableName)
+		if errors.Is(err, sql.ErrNoRows) {
+			_, err = db.Exec(tableDef)
+			if err != nil {
+				return nil, fmt.Errorf("error creating database structure: %w", err)
+			}
 		}
 	}
 

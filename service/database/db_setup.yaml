@@ -1,0 +1,56 @@
+tables:
+  users: -|
+    CREATE TABLE users (
+      handle TEXT NOT NULL PRIMARY KEY,
+      name TEXT NOT NULL,
+      auth INTEGER NOT NULL UNIQUE,
+      registerDate TEXT NOT NULL,
+      lastLogin TEXT NOT NULL
+    );
+  follows: -|
+    CREATE TABLE follows (
+      follower TEXT NOT NULL,
+      followed TEXT NOT NULL,
+      since TEXT NOT NULL,
+      FOREIGN KEY(follower) REFERENCES users(handle),
+      FOREIGN KEY(followed) REFERENCES users(handle),
+      PRIMARY KEY (follower, followed)
+    );
+  bans: -|
+    CREATE TABLE bans (
+      banisher TEXT NOT NULL,
+      banished TEXT NOT NULL,
+      since TEXT NOT NULL,
+      FOREIGN KEY(banisher) REFERENCES users(handle),
+      FOREIGN KEY(banished) REFERENCES users(handle),
+      PRIMARY KEY (banisher, banished)
+    );
+  photos: -|
+    CREATE TABLE photos (
+      id INTEGER NOT NULL AUTOINCREMENT PRIMARY KEY,
+      author TEXT NOT NULL,
+      title TEXT NOT NULL,
+      uploadDate TEXT NOT NULL,
+      file BLOB NOT NULL,
+      FOREIGN KEY(author) REFERENCES users(handle)
+    );
+  likes: -|
+    CREATE TABLE likes (
+      photoId INTEGER NOT NULL,
+      liker TEXT NOT NULL,
+      since TEXT NOT NULL,
+      FOREIGN KEY(liker) REFERENCES users(handle),
+      FOREIGN KEY(photoId) REFERENCES photos(id),
+      PRIMARY KEY (photoId, liker)
+    );
+  comments: -|
+    CREATE TABLE comments (
+      photoId INTEGER NOT NULL,
+      id INTEGER NOT NULL AUTOINCREMENT,
+      author TEXT NOT NULL,
+      content TEXT NOT NULL,
+      since TEXT NOT NULL,
+      FOREIGN KEY(author) REFERENCES users(handle),
+      FOREIGN KEY(photoId) REFERENCES photos(id),
+      PRIMARY KEY (photoId, id)
+    );

@@ -3,7 +3,7 @@ info:
   title: WASAPhoto
   description: |-
     This is Davide Marincione's API for his WASAPhoto implementation
-  version: '1.1.1'
+  version: '1.1.2'
 servers:
   - url: http://localhost
 tags:
@@ -25,6 +25,19 @@ components:
       description: |-
         The server encountered an internal error.
   schemas:
+    mydatetime:
+      title: Ubiquitous date time
+      description: |-
+        Since even the ISO8601 format may be misleading 
+        with regards on how the date time is represented,
+        and since the user is not giving the server any
+        date time, i hereby declare that the server will only
+        serve datetimes in the YYYY-MM-DDThh:mm format on zulu time (+0),
+        the client will see (hopefully) their converted time of course.
+      type: string
+      format: date-time
+      minLength: 16
+      maxLength: 16
     authtoken:
       title: User authorization token
       description: |-
@@ -56,8 +69,18 @@ components:
       example: "davide#7734"
       minLength: 6
       maxLength: 32
-    handlesbatch:
-      title: Batch of handles
+    userhandlexdate:
+      title: User handle and a date
+      description: |-
+        Same stuff as the user handle, but it may be useful to return it with a date (for likes for example).
+      type: object
+      properties:
+        handle:
+          $ref: "#/components/schemas/userhandle"
+        relevantdate:
+          $ref: "#/components/schemas/mydatetime"
+    handlesxdatebatch:
+      title: Batch of handles with dates
       description: |-
         Since a list of handles is useful in situations
         where arbitrary number of users may be listed
@@ -93,7 +116,7 @@ components:
         this is an acceptable compromise.
       type: array
       items:
-        $ref: "#/components/schemas/userhandle"
+        $ref: "#/components/schemas/userhandlexdate"
       minItems: 0
       maxItems: 64
 
@@ -182,9 +205,7 @@ components:
         comment-author:
           $ref: "#/components/schemas/userhandle"
         comment-date:
-          type: string
-          description: Date of upload of the comment
-          format: date-time
+          $ref: "#/components/schemas/mydatetime"
         comment-id:
           $ref: "#/components/schemas/commentid"
     commentsbatch:
@@ -237,11 +258,9 @@ components:
         comments-running-batch:
           $ref: "#/components/schemas/commentsbatch"
         likes-running-batch:
-          $ref: "#/components/schemas/handlesbatch"
+          $ref: "#/components/schemas/handlesxdatebatch"
         photo-date:
-          type: string
-          description: Date of upload of the photo
-          format: date-time
+          $ref: "#/components/schemas/mydatetime"
   
     profile:
       title: Profile
@@ -251,9 +270,9 @@ components:
         photos-running-batch:
           $ref: "#/components/schemas/photosbatch"
         followers-running-batch:
-          $ref: "#/components/schemas/handlesbatch"
+          $ref: "#/components/schemas/handlesxdatebatch"
         following-running-batch:
-          $ref: "#/components/schemas/handlesbatch"
+          $ref: "#/components/schemas/handlesxdatebatch"
 
     loginresponse:
       title: Login response
