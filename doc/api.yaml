@@ -32,7 +32,7 @@ components:
         with regards on how the date time is represented,
         and since the user is not giving the server any
         date time, i hereby declare that the server will only
-        serve datetimes in the YYYY-MM-DDThh:mm format on zulu time (+0),
+        serve datetimes in the 'YYYY-MM-DDThh:mm' format on zulu time (+00:00),
         the client will see (hopefully) their converted time of course.
       type: string
       format: date-time
