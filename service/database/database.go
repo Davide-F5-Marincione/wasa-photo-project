@@ -78,7 +78,18 @@ func New(db *sql.DB) (AppDatabase, error) {
 		if errors.Is(err, sql.ErrNoRows) {
 			_, err = db.Exec(tableDef)
 			if err != nil {
-				return nil, fmt.Errorf("error creating database structure: %w", err)
+				return nil, fmt.Errorf("error creating database table: %w", err)
+			}
+		}
+	}
+
+	// Check if trigger exists. If not, create it!
+	for triggerName, triggerDef := range setup_map["triggers"] {
+		err := db.QueryRow("SELECT name FROM sqlite_master WHERE type='trigger' AND name='" + triggerName + "';").Scan(&triggerName)
+		if errors.Is(err, sql.ErrNoRows) {
+			_, err = db.Exec(triggerDef)
+			if err != nil {
+				return nil, fmt.Errorf("error creating database trigger: %w", err)
 			}
 		}
 	}
