@@ -1,5 +1,5 @@
 tables:
-  users: -|
+  users:
     CREATE TABLE users (
       handle TEXT NOT NULL PRIMARY KEY,
       name TEXT NOT NULL,
@@ -7,7 +7,7 @@ tables:
       registerDate TEXT NOT NULL,
       lastLogin TEXT NOT NULL
     );
-  follows: -|
+  follows:
     CREATE TABLE follows (
       follower TEXT NOT NULL,
       followed TEXT NOT NULL,
@@ -16,7 +16,7 @@ tables:
       FOREIGN KEY(followed) REFERENCES users(handle),
       PRIMARY KEY (follower, followed)
     );
-  bans: -|
+  bans:
     CREATE TABLE bans (
       banisher TEXT NOT NULL,
       banished TEXT NOT NULL,
@@ -25,16 +25,16 @@ tables:
       FOREIGN KEY(banished) REFERENCES users(handle),
       PRIMARY KEY (banisher, banished)
     );
-  photos: -|
+  photos:
     CREATE TABLE photos (
-      id INTEGER NOT NULL AUTOINCREMENT PRIMARY KEY,
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
       author TEXT NOT NULL,
       title TEXT NOT NULL,
       uploadDate TEXT NOT NULL,
       file BLOB NOT NULL,
       FOREIGN KEY(author) REFERENCES users(handle)
     );
-  likes: -|
+  likes:
     CREATE TABLE likes (
       photoId INTEGER NOT NULL,
       liker TEXT NOT NULL,
@@ -43,10 +43,10 @@ tables:
       FOREIGN KEY(photoId) REFERENCES photos(id),
       PRIMARY KEY (photoId, liker)
     );
-  comments: -|
+  comments:
     CREATE TABLE comments (
       photoId INTEGER NOT NULL,
-      id INTEGER NOT NULL AUTOINCREMENT,
+      id INTEGER NOT NULL,
       author TEXT NOT NULL,
       content TEXT NOT NULL,
       since TEXT NOT NULL,

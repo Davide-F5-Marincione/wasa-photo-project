@@ -36,7 +36,7 @@ import (
 	"fmt"
 	"io/ioutil"
 
-	"git.sapienzaapps.it/fantasticcoffee/fantastic-coffee-decaffeinated/vendor/gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v2"
 )
 
 // AppDatabase is the high level interface for the DB
@@ -59,7 +59,7 @@ func New(db *sql.DB) (AppDatabase, error) {
 	}
 
 	// Load tables from db_setup.yaml
-	setup_file, err := ioutil.ReadFile("db_setup.yaml ")
+	setup_file, err := ioutil.ReadFile("../../service/database/db_setup.yaml")
 	if err != nil {
 		return nil, fmt.Errorf("error loading database description from file: %w", err)
 	}
