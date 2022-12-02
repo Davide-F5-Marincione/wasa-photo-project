@@ -39,8 +39,10 @@ import (
 // AppDatabase is the high level interface for the DB
 type AppDatabase interface {
 	GetUserDetails(userhandle string) (UserDetails, error)
+	GetUserDetailsAuth(auth int) (UserDetails, error)
 	InsertUser(details UserDetails) error
 	CheckAuthFree(auth int) bool
+	UpdateUsername(handle string, newname string) error
 
 	Ping() error
 }
