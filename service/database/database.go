@@ -40,7 +40,7 @@ import (
 type AppDatabase interface {
 	GetUserDetails(userhandle string) (UserDetails, error)
 	InsertUser(details UserDetails) error
-	CheckAuthFree(auth int64) bool
+	CheckAuthFree(auth int) bool
 
 	Ping() error
 }
@@ -86,8 +86,8 @@ func New(db *sql.DB) (AppDatabase, error) {
 			handle TEXT NOT NULL PRIMARY KEY,
 			name TEXT NOT NULL,
 			auth INTEGER NOT NULL UNIQUE,
-			registerDate TEXT DEFAULT "" NOT NULL,
-			lastLogin TEXT DEFAULT "" NOT NULL
+			registerDate TEXT DEFAULT CURRENT_TIMESTAMP NOT NULL,
+			lastLogin TEXT DEFAULT CURRENT_TIMESTAMP NOT NULL
 		);`)
 	if err != nil {
 		return nil, err
@@ -97,7 +97,7 @@ func New(db *sql.DB) (AppDatabase, error) {
 		`CREATE TABLE follows (
 			follower TEXT NOT NULL,
 			followed TEXT NOT NULL,
-			since TEXT DEFAULT "" NOT NULL,
+			since TEXT DEFAULT CURRENT_TIMESTAMP NOT NULL,
 			FOREIGN KEY(follower) REFERENCES users(handle),
 			FOREIGN KEY(followed) REFERENCES users(handle),
 			PRIMARY KEY (follower, followed)
@@ -110,7 +110,7 @@ func New(db *sql.DB) (AppDatabase, error) {
 		`CREATE TABLE bans (
 			banisher TEXT NOT NULL,
 			banished TEXT NOT NULL,
-			since TEXT DEFAULT "" NOT NULL,
+			since TEXT DEFAULT CURRENT_TIMESTAMP NOT NULL,
 			FOREIGN KEY(banisher) REFERENCES users(handle),
 			FOREIGN KEY(banished) REFERENCES users(handle),
 			PRIMARY KEY (banisher, banished)
@@ -124,7 +124,7 @@ func New(db *sql.DB) (AppDatabase, error) {
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
 			author TEXT NOT NULL,
 			title TEXT NOT NULL,
-			uploadDate TEXT DEFAULT "" NOT NULL,
+			uploadDate TEXT DEFAULT CURRENT_TIMESTAMP NOT NULL,
 			file BLOB NOT NULL,
 			commentsCounter INTEGER DEFAULT 0 NOT NULL,
 			FOREIGN KEY(author) REFERENCES users(handle)
@@ -137,7 +137,7 @@ func New(db *sql.DB) (AppDatabase, error) {
 		`CREATE TABLE likes (
 			photoId INTEGER NOT NULL,
 			liker TEXT NOT NULL,
-			since TEXT DEFAULT "" NOT NULL,
+			since TEXT DEFAULT CURRENT_TIMESTAMP NOT NULL,
 			FOREIGN KEY(liker) REFERENCES users(handle),
 			FOREIGN KEY(photoId) REFERENCES photos(id),
 			PRIMARY KEY (photoId, liker)
@@ -152,7 +152,7 @@ func New(db *sql.DB) (AppDatabase, error) {
 			id INTEGER DEFAULT 0 NOT NULL,
 			author TEXT NOT NULL,
 			content TEXT NOT NULL,
-			since TEXT DEFAULT "" NOT NULL,
+			since TEXT DEFAULT CURRENT_TIMESTAMP NOT NULL,
 			FOREIGN KEY(author) REFERENCES users(handle),
 			FOREIGN KEY(photoId) REFERENCES photos(id),
 			PRIMARY KEY (photoId, id)
@@ -166,72 +166,16 @@ func New(db *sql.DB) (AppDatabase, error) {
 		`CREATE TRIGGER commentsIncr
 			AFTER INSERT ON comments
 		BEGIN
-			UPDATE comments SET id = (SELECT photos.commentsCounter
-				FROM photos
-				WHERE photos.id = NEW.photoId),
-				since = strftime('%Y-%m-%dT%H:%M', 'now')
+			UPDATE comments
+				SET id = (SELECT photos.commentsCounter
+					FROM photos
+					WHERE photos.id = NEW.photoId)
 				WHERE ROWID = new.ROWID;
 			UPDATE photos
 				SET commentsCounter = photos.commentsCounter + 1
 				WHERE id = NEW.photoId;
 		END;`)
-	if err != nil {
-		return nil, err
-	}
 
-	err = addTrigger(db, "likesDate",
-		`CREATE TRIGGER likesDate
-			AFTER INSERT ON likes
-		BEGIN
-			UPDATE likes SET since = strftime('%Y-%m-%dT%H:%M', 'now')
-				WHERE ROWID = new.ROWID;
-		END;`)
-	if err != nil {
-		return nil, err
-	}
-
-	err = addTrigger(db, "photosDate",
-		`CREATE TRIGGER photosDate
-			AFTER INSERT ON photos
-		BEGIN
-			UPDATE photos SET since = strftime('%Y-%m-%dT%H:%M', 'now')
-				WHERE ROWID = new.ROWID;
-		END;`)
-	if err != nil {
-		return nil, err
-	}
-
-	err = addTrigger(db, "bansDate",
-		`CREATE TRIGGER bansDate
-			AFTER INSERT ON bans
-		BEGIN
-			UPDATE bans SET since = strftime('%Y-%m-%dT%H:%M', 'now')
-				WHERE ROWID = new.ROWID;
-		END;`)
-	if err != nil {
-		return nil, err
-	}
-
-	err = addTrigger(db, "followsDate",
-		`CREATE TRIGGER followsDate
-			AFTER INSERT ON follows
-		BEGIN
-			UPDATE follows SET since = strftime('%Y-%m-%dT%H:%M', 'now')
-				WHERE ROWID = new.ROWID;
-		END;`)
-	if err != nil {
-		return nil, err
-	}
-
-	err = addTrigger(db, "usersRegDate",
-		`CREATE TRIGGER usersRegDate
-			AFTER INSERT ON users
-		BEGIN
-			UPDATE users
-			SET registerDate = strftime('%Y-%m-%dT%H:%M', 'now'),
-				lastLogin = strftime('%Y-%m-%dT%H:%M', 'now')
-			WHERE ROWID = new.ROWID;
-		END;`)
 	if err != nil {
 		return nil, err
 	}

@@ -3,7 +3,7 @@ package database
 type UserDetails struct {
 	Handle string
 	Name   string
-	Auth   int64
+	Auth   int
 }
 
 type Follow struct {
@@ -19,21 +19,21 @@ type Ban struct {
 }
 
 type PhotoDetails struct {
-	id         int64
+	id         int
 	author     string
 	title      string
 	uploadDate string
 }
 
 type Like struct {
-	photoId int64
+	photoId int
 	liker   string
 	since   string
 }
 
 type Comment struct {
-	photoId int64
-	id      int64
+	photoId int
+	id      int
 	author  string
 	content string
 	since   string

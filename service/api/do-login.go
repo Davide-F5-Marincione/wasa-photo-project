@@ -12,9 +12,9 @@ import (
 )
 
 type loginResponse struct {
-	name   string `json:"resp-username"`
-	handle string `json:"resp-userhandle"`
-	auth   int64  `json:"resp-authtoken"`
+	Name   string `json:"resp-username"`
+	Handle string `json:"resp-userhandle"`
+	Auth   int    `json:"resp-authtoken"`
 }
 
 func (rt *_router) doLogin(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) {
@@ -30,37 +30,33 @@ func (rt *_router) doLogin(w http.ResponseWriter, r *http.Request, ps httprouter
 		return
 	}
 
+	w.Header().Set("Content-Type", "application/json")
+
 	details, err := rt.db.GetUserDetails(userhandle)
-	status := http.StatusOK
 	if err != nil {
 		// Hey, this guy doesn't exist in the db, let's register him
 		rand_auth := rand.Int63()
-		for !rt.db.CheckAuthFree(rand_auth) {
+		for !rt.db.CheckAuthFree(int(rand_auth)) {
 			rand_auth = rand.Int63()
 		}
-		details = database.UserDetails{Handle: userhandle, Name: userhandle, Auth: rand_auth}
+		details = database.UserDetails{Handle: userhandle, Name: userhandle, Auth: int(rand_auth)}
 		err = rt.db.InsertUser(details)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			ctx.Logger.WithError(err).Error("can't register new user")
 			return
 		}
-		status = http.StatusCreated
+		w.WriteHeader(http.StatusCreated)
 	}
 
-	resp := loginResponse{name: details.Name, handle: details.Handle, auth: details.Auth}
+	resp := loginResponse{Name: details.Name, Handle: details.Handle, Auth: details.Auth}
 
-	// TODO: return stuff
-	w.Header().Set("Content-Type", "application/json")
 	err = json.NewEncoder(w).Encode(resp)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		ctx.Logger.WithError(err).Error("can't encode login response")
 		return
 	}
-
-	w.WriteHeader(status)
-	println("out")
 }
 
 //// This stuff is kept here because.
