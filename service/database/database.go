@@ -34,21 +34,43 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"io/ioutil"
-
-	"gopkg.in/yaml.v2"
 )
 
 // AppDatabase is the high level interface for the DB
 type AppDatabase interface {
-	GetName() (string, error)
-	SetName(name string) error
+	GetUserDetails(userhandle string) (UserDetails, error)
+	InsertUser(details UserDetails) error
+	CheckAuthFree(auth int64) bool
 
 	Ping() error
 }
 
 type appdbimpl struct {
 	c *sql.DB
+}
+
+func addTable(db *sql.DB, tablename string, tabledef string) error {
+	// Check if table exists. If not, the database is empty, and we need to create the structure
+	err := db.QueryRow("SELECT name FROM sqlite_master WHERE type='table' AND name='" + tablename + "';").Scan(&tablename)
+	if errors.Is(err, sql.ErrNoRows) {
+		_, err = db.Exec(tabledef)
+		if err != nil {
+			return fmt.Errorf("error creating database table "+tablename+": %w", err)
+		}
+	}
+	return nil
+}
+
+func addTrigger(db *sql.DB, triggername string, triggerdef string) error {
+	// Check if trigger exists. If not, create it!
+	err := db.QueryRow("SELECT name FROM sqlite_master WHERE type='trigger' AND name='" + triggername + "';").Scan(&triggername)
+	if errors.Is(err, sql.ErrNoRows) {
+		_, err = db.Exec(triggerdef)
+		if err != nil {
+			return fmt.Errorf("error creating database trigger "+triggername+": %w", err)
+		}
+	}
+	return nil
 }
 
 // New returns a new instance of AppDatabase based on the SQLite connection `db`.
@@ -58,40 +80,160 @@ func New(db *sql.DB) (AppDatabase, error) {
 		return nil, errors.New("database is required when building a AppDatabase")
 	}
 
-	// Load tables from db_setup.yaml
-	setup_file, err := ioutil.ReadFile("../../service/database/db_setup.yaml")
+	/// TABLES
+	err := addTable(db, "users",
+		`CREATE TABLE users (
+			handle TEXT NOT NULL PRIMARY KEY,
+			name TEXT NOT NULL,
+			auth INTEGER NOT NULL UNIQUE,
+			registerDate TEXT DEFAULT "" NOT NULL,
+			lastLogin TEXT DEFAULT "" NOT NULL
+		);`)
 	if err != nil {
-		return nil, fmt.Errorf("error loading database description from file: %w", err)
+		return nil, err
 	}
 
-	setup_map := make(map[string]map[string]string) // Don't think i'll pass something more than strings
-
-	err = yaml.Unmarshal(setup_file, &setup_map)
-
+	err = addTable(db, "follows",
+		`CREATE TABLE follows (
+			follower TEXT NOT NULL,
+			followed TEXT NOT NULL,
+			since TEXT DEFAULT "" NOT NULL,
+			FOREIGN KEY(follower) REFERENCES users(handle),
+			FOREIGN KEY(followed) REFERENCES users(handle),
+			PRIMARY KEY (follower, followed)
+		);`)
 	if err != nil {
-		return nil, fmt.Errorf("error parsing database description from file: %w", err)
+		return nil, err
 	}
 
-	// Check if table exists. If not, the database is empty, and we need to create the structure
-	for tableName, tableDef := range setup_map["tables"] {
-		err := db.QueryRow("SELECT name FROM sqlite_master WHERE type='table' AND name='" + tableName + "';").Scan(&tableName)
-		if errors.Is(err, sql.ErrNoRows) {
-			_, err = db.Exec(tableDef)
-			if err != nil {
-				return nil, fmt.Errorf("error creating database table: %w", err)
-			}
-		}
+	err = addTable(db, "bans",
+		`CREATE TABLE bans (
+			banisher TEXT NOT NULL,
+			banished TEXT NOT NULL,
+			since TEXT DEFAULT "" NOT NULL,
+			FOREIGN KEY(banisher) REFERENCES users(handle),
+			FOREIGN KEY(banished) REFERENCES users(handle),
+			PRIMARY KEY (banisher, banished)
+		);`)
+	if err != nil {
+		return nil, err
 	}
 
-	// Check if trigger exists. If not, create it!
-	for triggerName, triggerDef := range setup_map["triggers"] {
-		err := db.QueryRow("SELECT name FROM sqlite_master WHERE type='trigger' AND name='" + triggerName + "';").Scan(&triggerName)
-		if errors.Is(err, sql.ErrNoRows) {
-			_, err = db.Exec(triggerDef)
-			if err != nil {
-				return nil, fmt.Errorf("error creating database trigger: %w", err)
-			}
-		}
+	err = addTable(db, "photos",
+		`CREATE TABLE photos (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			author TEXT NOT NULL,
+			title TEXT NOT NULL,
+			uploadDate TEXT DEFAULT "" NOT NULL,
+			file BLOB NOT NULL,
+			commentsCounter INTEGER DEFAULT 0 NOT NULL,
+			FOREIGN KEY(author) REFERENCES users(handle)
+		);`)
+	if err != nil {
+		return nil, err
+	}
+
+	err = addTable(db, "likes",
+		`CREATE TABLE likes (
+			photoId INTEGER NOT NULL,
+			liker TEXT NOT NULL,
+			since TEXT DEFAULT "" NOT NULL,
+			FOREIGN KEY(liker) REFERENCES users(handle),
+			FOREIGN KEY(photoId) REFERENCES photos(id),
+			PRIMARY KEY (photoId, liker)
+		);`)
+	if err != nil {
+		return nil, err
+	}
+
+	err = addTable(db, "comments",
+		`CREATE TABLE comments (
+			photoId INTEGER NOT NULL,
+			id INTEGER DEFAULT 0 NOT NULL,
+			author TEXT NOT NULL,
+			content TEXT NOT NULL,
+			since TEXT DEFAULT "" NOT NULL,
+			FOREIGN KEY(author) REFERENCES users(handle),
+			FOREIGN KEY(photoId) REFERENCES photos(id),
+			PRIMARY KEY (photoId, id)
+		);`)
+	if err != nil {
+		return nil, err
+	}
+
+	/// TRIGGERS
+	err = addTrigger(db, "commentsIncr", //To increment the comment id and add a date
+		`CREATE TRIGGER commentsIncr
+			AFTER INSERT ON comments
+		BEGIN
+			UPDATE comments SET id = (SELECT photos.commentsCounter
+				FROM photos
+				WHERE photos.id = NEW.photoId),
+				since = strftime('%Y-%m-%dT%H:%M', 'now')
+				WHERE ROWID = new.ROWID;
+			UPDATE photos
+				SET commentsCounter = photos.commentsCounter + 1
+				WHERE id = NEW.photoId;
+		END;`)
+	if err != nil {
+		return nil, err
+	}
+
+	err = addTrigger(db, "likesDate",
+		`CREATE TRIGGER likesDate
+			AFTER INSERT ON likes
+		BEGIN
+			UPDATE likes SET since = strftime('%Y-%m-%dT%H:%M', 'now')
+				WHERE ROWID = new.ROWID;
+		END;`)
+	if err != nil {
+		return nil, err
+	}
+
+	err = addTrigger(db, "photosDate",
+		`CREATE TRIGGER photosDate
+			AFTER INSERT ON photos
+		BEGIN
+			UPDATE photos SET since = strftime('%Y-%m-%dT%H:%M', 'now')
+				WHERE ROWID = new.ROWID;
+		END;`)
+	if err != nil {
+		return nil, err
+	}
+
+	err = addTrigger(db, "bansDate",
+		`CREATE TRIGGER bansDate
+			AFTER INSERT ON bans
+		BEGIN
+			UPDATE bans SET since = strftime('%Y-%m-%dT%H:%M', 'now')
+				WHERE ROWID = new.ROWID;
+		END;`)
+	if err != nil {
+		return nil, err
+	}
+
+	err = addTrigger(db, "followsDate",
+		`CREATE TRIGGER followsDate
+			AFTER INSERT ON follows
+		BEGIN
+			UPDATE follows SET since = strftime('%Y-%m-%dT%H:%M', 'now')
+				WHERE ROWID = new.ROWID;
+		END;`)
+	if err != nil {
+		return nil, err
+	}
+
+	err = addTrigger(db, "usersRegDate",
+		`CREATE TRIGGER usersRegDate
+			AFTER INSERT ON users
+		BEGIN
+			UPDATE users
+			SET registerDate = strftime('%Y-%m-%dT%H:%M', 'now'),
+				lastLogin = strftime('%Y-%m-%dT%H:%M', 'now')
+			WHERE ROWID = new.ROWID;
+		END;`)
+	if err != nil {
+		return nil, err
 	}
 
 	return &appdbimpl{
