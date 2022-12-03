@@ -3,7 +3,7 @@ info:
   title: WASAPhoto
   description: |-
     This is Davide Marincione's API for his WASAPhoto implementation
-  version: '1.1.3'
+  version: '1.1.4'
 servers:
   - url: http://localhost
 tags:
@@ -552,6 +552,9 @@ paths:
                   $ref: "#/components/schemas/title"
                 photo:
                   $ref: "#/components/schemas/rawphoto"
+            encoding:
+              photo:
+                contentType: image/png, image/jpeg, image/webp, image/gif, image/bmp
         required: true
       responses:
         '201':
@@ -636,13 +639,25 @@ paths:
       tags: ["photo"]
       summary: Get the actual photo
       description: |-
-        Gets the actual photo, as a png (we assume every photo is being uploaded as png)
+        Gets the actual photo
       operationId: getRawPhoto
       responses:
         '200':
           description: Here's the photo
           content:
             image/png:
+              schema:
+                $ref: "#/components/schemas/rawphoto"
+            image/jpeg:
+              schema:
+                $ref: "#/components/schemas/rawphoto"
+            image/webp:
+              schema:
+                $ref: "#/components/schemas/rawphoto"
+            image/gif:
+              schema:
+                $ref: "#/components/schemas/rawphoto"
+            image/bmp:
               schema:
                 $ref: "#/components/schemas/rawphoto"
         '401':
