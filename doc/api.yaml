@@ -19,12 +19,8 @@ components:
       type: http
       scheme: bearer
   responses:
-    BadRequestError:
-      description: Request submitted was invalid or content was missing
     UnauthorizedError:
       description: Access token is missing or invalid
-    UnsupportedMediaTypeError:
-      description: Given media type (in this case, image) is unsupported
     InternalServerError:
       description: |-
         The server encountered an internal error.
@@ -568,13 +564,13 @@ paths:
               schema:
                 $ref: "#/components/schemas/photoid"
         '400':
-          $ref: '#/components/responses/BadRequestError'
+          description: Unacceptable title or otherwise malformed request
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '413':
           description: Photo is too big!
         '415':
-          $ref: '#/components/responses/UnsupportedMediaTypeError'
+          description: Given image format is unsupported
         '500':
           $ref: '#/components/responses/InternalServerError'
   /photos/{photo-id}:
@@ -751,6 +747,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/commentid"
+        '400':
+          description: Comment is unacceptable
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '404':
