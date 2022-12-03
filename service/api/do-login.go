@@ -35,11 +35,11 @@ func (rt *_router) doLogin(w http.ResponseWriter, r *http.Request, ps httprouter
 	details, err := rt.db.GetUserDetails(userhandle)
 	if err != nil {
 		// Hey, this guy doesn't exist in the db, let's register him
-		rand_auth := rand.Int63()
-		for !rt.db.CheckAuthFree(int(rand_auth)) {
-			rand_auth = rand.Int63()
+		randauth := rand.Int63()
+		for !rt.db.CheckAuthFree(int(randauth)) {
+			randauth = rand.Int63()
 		}
-		details = database.UserDetails{Handle: userhandle, Name: userhandle, Auth: int(rand_auth)}
+		details = database.UserDetails{Handle: userhandle, Name: userhandle, Auth: int(randauth)}
 		err = rt.db.InsertUser(details)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
