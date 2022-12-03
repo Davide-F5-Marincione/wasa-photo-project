@@ -49,6 +49,9 @@ type AppDatabase interface {
 	InsertFollow(follower string, followed string) error
 	CheckFollow(follower string, followed string) bool
 	RemoveFollow(follower string, followed string) error
+	InsertPhoto(author string, title string, file []byte) (int, error)
+	GetPhotoDetails(id int) (PhotoDetails, error)
+	GetBlobPhoto(id int) ([]byte, error)
 
 	Ping() error
 }
@@ -182,6 +185,18 @@ func New(db *sql.DB) (AppDatabase, error) {
 			UPDATE photos
 				SET commentsCounter = photos.commentsCounter + 1
 				WHERE id = NEW.photoId;
+		END;`)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = addTrigger(db, "photoDelCascade", //To delete comments and likes
+		`CREATE TRIGGER photoDelCascade
+			BEFORE DELETE ON photos
+		BEGIN
+			DELETE FROM comments WHERE photoId = OLD.id;
+			DELETE FROM likes WHERE photoId = OLD.id;
 		END;`)
 
 	if err != nil {

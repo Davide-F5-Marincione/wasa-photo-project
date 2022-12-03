@@ -563,10 +563,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/photoid"
+        '400':
+          description: Unacceptable title or otherwise malformed request
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '413':
           description: Photo is too big!
+        '415':
+          description: Given image format is unsupported
         '500':
           $ref: '#/components/responses/InternalServerError'
   /photos/{photo-id}:
@@ -743,6 +747,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/commentid"
+        '400':
+          description: Comment is unacceptable
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '404':

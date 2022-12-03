@@ -85,6 +85,8 @@ func (rt *_router) authWrap(fn httpAuthRouterHandler) func(http.ResponseWriter, 
 
 		actx.Logger = rt.baseLogger.WithFields(logrus.Fields{
 			"user-handle": details.Handle,
+			"reqid":       actx.ReqUUID.String(),
+			"remote-ip":   r.RemoteAddr,
 		})
 
 		fn(w, r, ps, actx)
