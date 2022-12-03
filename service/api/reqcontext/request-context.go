@@ -19,3 +19,16 @@ type RequestContext struct {
 	// Logger is a custom field logger for the request
 	Logger logrus.FieldLogger
 }
+
+// AuthRequestContext is the context of request which need an authorization (aka all but the login)
+type AuthRequestContext struct {
+	// Information of the user who's doing the request
+	ReqUserHandle string
+	ReqUserAuth   int
+
+	// ReqUUID is the request unique ID
+	ReqUUID uuid.UUID
+
+	// Logger is a custom field logger for the request
+	Logger logrus.FieldLogger
+}
