@@ -43,6 +43,12 @@ type AppDatabase interface {
 	InsertUser(details UserDetails) error
 	CheckAuthFree(auth int) bool
 	UpdateUsername(handle string, newname string) error
+	InsertBan(banisher string, banished string) error
+	CheckBan(banisher string, banished string) bool
+	RemoveBan(banisher string, banished string) error
+	InsertFollow(follower string, followed string) error
+	CheckFollow(follower string, followed string) bool
+	RemoveFollow(follower string, followed string) error
 
 	Ping() error
 }
