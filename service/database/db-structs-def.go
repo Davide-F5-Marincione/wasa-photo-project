@@ -25,10 +25,10 @@ type Ban struct {
 // PhotoDetails contains all the useful ready-at-hand
 // information of a photo
 type PhotoDetails struct {
-	id         int
-	author     string
-	title      string
-	uploadDate string
+	ID         int
+	Author     string
+	Title      string
+	UploadDate string
 }
 
 // Like is needed to handle the db schema 'likes'
