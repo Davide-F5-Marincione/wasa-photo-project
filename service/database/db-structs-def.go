@@ -40,9 +40,9 @@ type Like struct {
 
 // Comment is needed to handle the db schema 'comments'
 type Comment struct {
-	photoID int
-	id      int
-	author  string
-	content string
-	since   string
+	PhotoID int
+	ID      int
+	Author  string
+	Content string
+	Since   string
 }

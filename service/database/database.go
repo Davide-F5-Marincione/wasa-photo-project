@@ -38,21 +38,32 @@ import (
 
 // AppDatabase is the high level interface for the DB
 type AppDatabase interface {
-	GetUserDetails(userhandle string) (UserDetails, error)
-	GetUserDetailsAuth(auth int) (UserDetails, error)
 	InsertUser(details UserDetails) error
 	CheckAuthFree(auth int) bool
+	GetUserDetails(userhandle string) (UserDetails, error)
+	GetUserDetailsAuth(auth int) (UserDetails, error)
 	UpdateUsername(handle string, newname string) error
+
 	InsertBan(banisher string, banished string) error
 	CheckBan(banisher string, banished string) bool
 	RemoveBan(banisher string, banished string) error
+
 	InsertFollow(follower string, followed string) error
 	CheckFollow(follower string, followed string) bool
 	RemoveFollow(follower string, followed string) error
+
 	InsertPhoto(author string, title string, file []byte) (int, error)
 	GetPhotoDetails(id int) (PhotoDetails, error)
 	GetBlobPhoto(id int) ([]byte, error)
 	RemovePhoto(id int) error
+
+	CheckLike(liker string, photoid int) bool
+	InsertLike(liker string, photoid int) error
+	RemoveLike(liker string, photoid int) error
+
+	InsertComment(author string, content string, photoid int) (int, error)
+	GetComment(photoid int, id int) (Comment, error)
+	RemoveComment(photoid int, id int) error
 
 	Ping() error
 }
