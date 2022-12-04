@@ -15,6 +15,7 @@ func (rt *_router) Handler() http.Handler {
 	rt.router.DELETE("/users/:user-handle/follows/:other-handle", rt.authWrap(rt.unfollowUser))
 	rt.router.POST("/photos", rt.authWrap(rt.uploadPhoto))
 	rt.router.GET("/photos/:id/raw", rt.authWrap(rt.getRawPhoto))
+	rt.router.DELETE("/photos/:id", rt.authWrap(rt.deletePhoto))
 
 	// Special routes
 	rt.router.GET("/liveness", rt.liveness)

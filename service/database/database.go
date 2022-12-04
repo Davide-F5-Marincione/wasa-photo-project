@@ -52,6 +52,7 @@ type AppDatabase interface {
 	InsertPhoto(author string, title string, file []byte) (int, error)
 	GetPhotoDetails(id int) (PhotoDetails, error)
 	GetBlobPhoto(id int) ([]byte, error)
+	RemovePhoto(id int) error
 
 	Ping() error
 }
