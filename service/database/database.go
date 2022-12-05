@@ -68,6 +68,15 @@ type AppDatabase interface {
 	GetStream(userhandle string) ([]int, error)
 	GetStreamLimit(userhandle string, toplimit int) ([]int, error)
 
+	GetFollowers(userhandle string) ([]UserAndDatetime, error)
+	GetFollowersLimit(userhandle string, basehandle string) ([]UserAndDatetime, error)
+
+	GetFollowing(userhandle string) ([]UserAndDatetime, error)
+	GetFollowingLimit(userhandle string, basehandle string) ([]UserAndDatetime, error)
+
+	GetPhotosProfile(userhandle string) ([]int, error)
+	GetPhotosProfileLimit(userhandle string, toplimit int) ([]int, error)
+
 	Ping() error
 }
 

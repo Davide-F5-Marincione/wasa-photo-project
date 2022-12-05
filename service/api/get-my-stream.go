@@ -1,46 +1,63 @@
 package api
 
+import (
+	"encoding/json"
+	"net/http"
+	"strconv"
+
+	"git.sapienzaapps.it/fantasticcoffee/fantastic-coffee-decaffeinated/service/api/reqcontext"
+	"github.com/julienschmidt/httprouter"
+)
+
 // TODO: IMPLEMENT THIS STUFF
-// func (rt *_router) getMyStream(w http.ResponseWriter, r *http.Request, ps httprouter.Params, actx reqcontext.AuthRequestContext) {
-// 	photoid := ps.ByName("photo-id")
+func (rt *_router) getMyStream(w http.ResponseWriter, r *http.Request, ps httprouter.Params, actx reqcontext.AuthRequestContext) {
+	givenhandle := ps.ByName("user-handle")
 
-// 	intphotoid, err := strconv.Atoi(photoid)
+	resuser, err := rt.db.GetUserDetails(givenhandle)
 
-// 	if err != nil {
-// 		w.WriteHeader(http.StatusNotFound)
-// 		return
-// 	}
+	// Probably bad user handle used
+	if err != nil {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
 
-// 	photodetails, err := rt.db.GetPhotoDetails(intphotoid)
+	// The given authorization is for another user!
+	if resuser.Handle != actx.ReqUserHandle {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
 
-// 	// Probably bad id used
-// 	if err != nil {
-// 		w.WriteHeader(http.StatusNotFound)
-// 		return
-// 	}
+	photoslimit := r.URL.Query().Get("photos-limit")
+	intlimit := 0
+	if len(photoslimit) > 0 {
+		intlimit, err = strconv.Atoi(photoslimit)
 
-// 	// We may be banned from seeing this!
-// 	if rt.db.CheckBan(photodetails.Author, actx.ReqUserHandle) {
-// 		w.WriteHeader(http.StatusUnauthorized)
-// 		return
-// 	}
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+	}
 
-// 	photofile, err := rt.db.GetBlobPhoto(intphotoid)
+	var res []int
 
-// 	if err != nil {
-// 		w.WriteHeader(http.StatusInternalServerError)
-// 		actx.Logger.WithError(err).Error("can't retrieve photo blob from db")
-// 		return
-// 	}
+	if intlimit < 1 {
+		res, err = rt.db.GetStream(givenhandle)
+	} else {
+		res, err = rt.db.GetStreamLimit(givenhandle, intlimit)
+	}
 
-// 	contenttype := http.DetectContentType(photofile[:512])
+	// Maybe empty result may throw an error here? Will see.
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		actx.Logger.WithError(err).Error("can't get photo ids for stream")
+		return
+	}
 
-// 	w.Header().Set("Content-Type", contenttype)
-// 	_, err = w.Write(photofile)
-
-// 	if err != nil {
-// 		w.WriteHeader(http.StatusInternalServerError)
-// 		actx.Logger.WithError(err).Error("can't write photo in response")
-// 		return
-// 	}
-// }
+	w.Header().Set("Content-Type", "application/json")
+	err = json.NewEncoder(w).Encode(res)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		actx.Logger.WithError(err).Error("can't encode photo ids in response")
+		return
+	}
+}
