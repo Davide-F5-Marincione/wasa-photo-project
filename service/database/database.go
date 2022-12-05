@@ -65,6 +65,9 @@ type AppDatabase interface {
 	GetComment(photoid int, id int) (Comment, error)
 	RemoveComment(photoid int, id int) error
 
+	GetStream(userhandle string) ([]int, error)
+	GetStreamLimit(userhandle string, toplimit int) ([]int, error)
+
 	Ping() error
 }
 
@@ -209,6 +212,22 @@ func New(db *sql.DB) (AppDatabase, error) {
 		BEGIN
 			DELETE FROM comments WHERE photoId = OLD.id;
 			DELETE FROM likes WHERE photoId = OLD.id;
+		END;`)
+
+	if err != nil {
+		return nil, err
+	}
+
+	// In case we may want to also delete users, still haven't designed option to do so
+	err = addTrigger(db, "userDelCascade", //First delete comments and likes, then photos, then follows and bans
+		`CREATE TRIGGER photoDelCascade
+			BEFORE DELETE ON users
+		BEGIN
+			DELETE FROM comments WHERE author = OLD.handle;
+			DELETE FROM likes WHERE liker = OLD.handle;
+			DELETE FROM photos WHERE author = OLD.handle;
+			DELETE FROM follows WHERE follower = OLD.handle OR followed = OLD.handle;
+			DELETE FROM bans WHERE banisher = OLD.handle OR banished = OLD.handle;
 		END;`)
 
 	if err != nil {
