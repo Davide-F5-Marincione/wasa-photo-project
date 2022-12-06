@@ -71,6 +71,9 @@ type AppDatabase interface {
 	GetFollowing(userhandle string, basehandle string) ([]UserAndDatetime, error)
 	GetPhotosProfile(userhandle string, toplimit int) ([]int, error)
 
+	GetPhotoComments(photoid int, commentlimit int) ([]CommentShow, error)
+	GetPhotoLikes(photoid int, basehandle string) ([]UserAndDatetime, error)
+
 	Ping() error
 }
 

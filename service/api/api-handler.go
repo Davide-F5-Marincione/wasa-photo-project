@@ -20,6 +20,7 @@ func (rt *_router) Handler() http.Handler {
 	rt.router.GET("/users/:user-handle/stream", rt.authWrap(rt.getMyStream))
 
 	rt.router.POST("/photos", rt.authWrap(rt.uploadPhoto))
+	rt.router.GET("/photos/:photo-id", rt.authWrap(rt.getPhotoPost))
 	rt.router.GET("/photos/:photo-id/raw", rt.authWrap(rt.getRawPhoto))
 	rt.router.DELETE("/photos/:photo-id", rt.authWrap(rt.deletePhoto))
 

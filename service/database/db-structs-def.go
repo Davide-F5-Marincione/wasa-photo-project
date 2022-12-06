@@ -48,8 +48,8 @@ type Like struct {
 // Comment is needed to handle the db schema 'comments'
 type Comment struct {
 	PhotoID int
-	ID      int
-	Author  string
-	Content string
-	Since   string
+	ID      int    `json:"comment-id"`
+	Author  string `json:"comment-author"`
+	Content string `json:"comment-text"`
+	Since   string `json:"comment-date"`
 }
