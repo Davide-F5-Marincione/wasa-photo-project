@@ -49,7 +49,7 @@ func (rt *_router) unlikePhoto(w http.ResponseWriter, r *http.Request, ps httpro
 		return
 	}
 
-	//Check if already unliked
+	// Check if already unliked
 	if !rt.db.CheckLike(actx.ReqUserHandle, intphotoid) {
 		w.WriteHeader(http.StatusNoContent)
 		return

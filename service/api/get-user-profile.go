@@ -46,11 +46,7 @@ func (rt *_router) getUserProfile(w http.ResponseWriter, r *http.Request, ps htt
 
 	var photos []int
 
-	if intphotolimit < 1 {
-		photos, err = rt.db.GetPhotosProfile(givenhandle)
-	} else {
-		photos, err = rt.db.GetPhotosProfileLimit(givenhandle, intphotolimit)
-	}
+	photos, err = rt.db.GetPhotosProfile(givenhandle, intphotolimit)
 
 	// Maybe empty result may throw an error here? Will see.
 	if err != nil {
@@ -62,11 +58,7 @@ func (rt *_router) getUserProfile(w http.ResponseWriter, r *http.Request, ps htt
 	followersbase := r.URL.Query().Get("followers-base")
 	var followers []database.UserAndDatetime
 
-	if len(followersbase) < 1 {
-		followers, err = rt.db.GetFollowers(givenhandle)
-	} else {
-		followers, err = rt.db.GetFollowersLimit(givenhandle, followersbase)
-	}
+	followers, err = rt.db.GetFollowers(givenhandle, followersbase)
 
 	// Maybe empty result may throw an error here? Will see.
 	if err != nil {
@@ -78,11 +70,7 @@ func (rt *_router) getUserProfile(w http.ResponseWriter, r *http.Request, ps htt
 	followingbase := r.URL.Query().Get("following-base")
 	var following []database.UserAndDatetime
 
-	if len(followingbase) < 1 {
-		following, err = rt.db.GetFollowing(givenhandle)
-	} else {
-		following, err = rt.db.GetFollowingLimit(givenhandle, followingbase)
-	}
+	following, err = rt.db.GetFollowing(givenhandle, followingbase)
 
 	// Maybe empty result may throw an error here? Will see.
 	if err != nil {

@@ -22,12 +22,13 @@ func (rt *_router) uploadPhoto(w http.ResponseWriter, r *http.Request, ps httpro
 
 	title := r.PostFormValue("title")
 	photofile, header, err := r.FormFile("photo") // Why doesn't there exist PostFormFile?
-	defer photofile.Close()
 
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
+
+	defer photofile.Close()
 
 	// Richiesta un po' 'ciotta eh?
 	if header.Size >= 52428800 {
@@ -70,7 +71,7 @@ func (rt *_router) uploadPhoto(w http.ResponseWriter, r *http.Request, ps httpro
 		return
 	}
 
-	remainingsize := header.Size - 512 //maybe we've read the whole image already
+	remainingsize := header.Size - 512 // maybe we've read the whole image already
 	if remainingsize > 0 {
 		leftbuff := make([]byte, remainingsize)
 

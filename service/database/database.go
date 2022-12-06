@@ -65,17 +65,11 @@ type AppDatabase interface {
 	GetComment(photoid int, id int) (Comment, error)
 	RemoveComment(photoid int, id int) error
 
-	GetStream(userhandle string) ([]int, error)
-	GetStreamLimit(userhandle string, toplimit int) ([]int, error)
-
-	GetFollowers(userhandle string) ([]UserAndDatetime, error)
-	GetFollowersLimit(userhandle string, basehandle string) ([]UserAndDatetime, error)
-
-	GetFollowing(userhandle string) ([]UserAndDatetime, error)
-	GetFollowingLimit(userhandle string, basehandle string) ([]UserAndDatetime, error)
-
-	GetPhotosProfile(userhandle string) ([]int, error)
-	GetPhotosProfileLimit(userhandle string, toplimit int) ([]int, error)
+	// Batches gets
+	GetStream(userhandle string, toplimit int) ([]int, error)
+	GetFollowers(userhandle string, basehandle string) ([]UserAndDatetime, error)
+	GetFollowing(userhandle string, basehandle string) ([]UserAndDatetime, error)
+	GetPhotosProfile(userhandle string, toplimit int) ([]int, error)
 
 	Ping() error
 }
@@ -161,7 +155,7 @@ func New(db *sql.DB) (AppDatabase, error) {
 			title TEXT NOT NULL,
 			uploadDate TEXT DEFAULT CURRENT_TIMESTAMP NOT NULL,
 			file BLOB NOT NULL,
-			commentsCounter INTEGER DEFAULT 0 NOT NULL,
+			commentsCounter INTEGER DEFAULT 1 NOT NULL,
 			FOREIGN KEY(author) REFERENCES users(handle)
 		);`)
 	if err != nil {
@@ -229,7 +223,7 @@ func New(db *sql.DB) (AppDatabase, error) {
 
 	// In case we may want to also delete users, still haven't designed option to do so
 	err = addTrigger(db, "userDelCascade", //First delete comments and likes, then photos, then follows and bans
-		`CREATE TRIGGER photoDelCascade
+		`CREATE TRIGGER userDelCascade
 			BEFORE DELETE ON users
 		BEGIN
 			DELETE FROM comments WHERE author = OLD.handle;

@@ -34,13 +34,13 @@ func (rt *_router) banUser(w http.ResponseWriter, r *http.Request, ps httprouter
 		return
 	}
 
-	//Check if trying to ban self
+	// Check if trying to ban self
 	if otherhandle == actx.ReqUserHandle {
 		w.WriteHeader(http.StatusConflict)
 		return
 	}
 
-	//Check if already banned
+	// Check if already banned
 	if rt.db.CheckBan(actx.ReqUserHandle, otherhandle) {
 		w.WriteHeader(http.StatusNoContent)
 		return

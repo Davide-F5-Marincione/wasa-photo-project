@@ -54,7 +54,7 @@ func (rt *_router) likePhoto(w http.ResponseWriter, r *http.Request, ps httprout
 		return
 	}
 
-	//Check if already liked
+	// Check if already liked
 	if rt.db.CheckLike(actx.ReqUserHandle, intphotoid) {
 		w.WriteHeader(http.StatusNoContent)
 		return

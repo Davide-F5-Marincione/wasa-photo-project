@@ -34,7 +34,7 @@ func (rt *_router) unfollowUser(w http.ResponseWriter, r *http.Request, ps httpr
 		return
 	}
 
-	//Check if already unfollowed
+	// Check if already unfollowed
 	if !rt.db.CheckFollow(actx.ReqUserHandle, otherhandle) {
 		w.WriteHeader(http.StatusNoContent)
 		return

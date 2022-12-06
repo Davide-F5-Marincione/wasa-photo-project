@@ -1,13 +1,19 @@
 package database
 
-// MaxIDs is the maximum number of returned ids on a request
+import "database/sql"
+
+// MaxPhotos is the maximum number of returned ids on a request
 const MaxPhotos int = 64
 
 // GetName is an example that shows you how to query data
-func (db *appdbimpl) GetPhotosProfile(userhandle string) ([]int, error) {
-	var ids []int = make([]int, MaxPhotos)
 
-	res, err := db.c.Query(`
+func (db *appdbimpl) GetPhotosProfile(userhandle string, toplimit int) ([]int, error) {
+	var ids []int = make([]int, MaxPhotos)
+	var res *sql.Rows
+	var err error
+
+	if toplimit < 1 {
+		res, err = db.c.Query(`
 			SELECT id
 			FROM photos
 			WHERE
@@ -16,27 +22,8 @@ func (db *appdbimpl) GetPhotosProfile(userhandle string) ([]int, error) {
 			LIMIT ?
 			`, userhandle, MaxPhotos)
 
-	if err != nil {
-		return nil, err
-	}
-
-	i := 0
-	for res.Next() {
-		res.Scan(&ids[i]) // Since I can't do ids[i++]...
-		i += 1            // This warning is outrageous, i++ is ugly by itself!
-	}
-
-	if err = res.Err(); err != nil {
-		return nil, err
-	}
-
-	return ids, err
-}
-
-func (db *appdbimpl) GetPhotosProfileLimit(userhandle string, toplimit int) ([]int, error) {
-	var ids []int = make([]int, MaxPhotos)
-
-	res, err := db.c.Query(`
+	} else {
+		res, err = db.c.Query(`
 			SELECT id
 			FROM photos
 			WHERE
@@ -44,6 +31,7 @@ func (db *appdbimpl) GetPhotosProfileLimit(userhandle string, toplimit int) ([]i
 			ORDER BY id DESC
 			LIMIT ?
 			`, userhandle, toplimit, MaxPhotos)
+	}
 
 	if err != nil {
 		return nil, err
@@ -52,12 +40,12 @@ func (db *appdbimpl) GetPhotosProfileLimit(userhandle string, toplimit int) ([]i
 	i := 0
 	for res.Next() {
 		res.Scan(&ids[i]) // Since I can't do ids[i++]...
-		i += 1            // This warning is outrageous, i++ is ugly by itself!
+		i++               // This warning is outrageous, i++ is ugly by itself!
 	}
 
 	if err = res.Err(); err != nil {
 		return nil, err
 	}
 
-	return ids, err
+	return ids[:i], err
 }

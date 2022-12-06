@@ -40,11 +40,7 @@ func (rt *_router) getMyStream(w http.ResponseWriter, r *http.Request, ps httpro
 
 	var res []int
 
-	if intlimit < 1 {
-		res, err = rt.db.GetStream(givenhandle)
-	} else {
-		res, err = rt.db.GetStreamLimit(givenhandle, intlimit)
-	}
+	res, err = rt.db.GetStream(givenhandle, intlimit)
 
 	// Maybe empty result may throw an error here? Will see.
 	if err != nil {

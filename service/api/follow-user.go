@@ -34,13 +34,13 @@ func (rt *_router) followUser(w http.ResponseWriter, r *http.Request, ps httprou
 		return
 	}
 
-	//Check if trying to follow self
+	// Check if trying to follow self
 	if otherhandle == actx.ReqUserHandle {
 		w.WriteHeader(http.StatusConflict)
 		return
 	}
 
-	//Check if already banned
+	// Check if already banned
 	if rt.db.CheckFollow(actx.ReqUserHandle, otherhandle) {
 		w.WriteHeader(http.StatusNoContent)
 		return
