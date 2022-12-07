@@ -2,12 +2,13 @@ package api
 
 import (
 	"net/http"
+	"strconv"
 
 	"git.sapienzaapps.it/fantasticcoffee/fantastic-coffee-decaffeinated/service/api/reqcontext"
 	"github.com/julienschmidt/httprouter"
 )
 
-func (rt *_router) followUser(w http.ResponseWriter, r *http.Request, ps httprouter.Params, actx reqcontext.AuthRequestContext) {
+func (rt *_router) likePhoto(w http.ResponseWriter, r *http.Request, ps httprouter.Params, actx reqcontext.AuthRequestContext) {
 	givenhandle := ps.ByName("user-handle")
 
 	resuser, err := rt.db.GetUserDetails(givenhandle)
@@ -24,33 +25,46 @@ func (rt *_router) followUser(w http.ResponseWriter, r *http.Request, ps httprou
 		return
 	}
 
-	otherhandle := ps.ByName("other-handle")
+	photoid := ps.ByName("photo-id")
 
-	resuser, err = rt.db.GetUserDetails(otherhandle)
+	intphotoid, err := strconv.Atoi(photoid)
 
-	// Probably bad user handle used
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
-	// Check if trying to follow self
-	if otherhandle == actx.ReqUserHandle {
+	photodetails, err := rt.db.GetPhotoDetails(intphotoid)
+
+	// Probably bad id used
+	if err != nil {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	// We may be banned from the author!
+	if rt.db.CheckBan(photodetails.Author, actx.ReqUserHandle) {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	// We cannot like our own photo!
+	if resuser.Handle == photodetails.Author {
 		w.WriteHeader(http.StatusConflict)
 		return
 	}
 
-	// Check if already banned
-	if rt.db.CheckFollow(actx.ReqUserHandle, otherhandle) {
+	// Check if already liked
+	if rt.db.CheckLike(actx.ReqUserHandle, intphotoid) {
 		w.WriteHeader(http.StatusNoContent)
 		return
 	}
 
-	err = rt.db.InsertFollow(actx.ReqUserHandle, otherhandle)
+	err = rt.db.InsertLike(actx.ReqUserHandle, intphotoid)
 
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		actx.Logger.WithError(err).Error("can't follow user")
+		actx.Logger.WithError(err).Error("can't like photo")
 		return
 	}
 

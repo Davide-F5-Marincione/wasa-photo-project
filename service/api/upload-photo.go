@@ -22,13 +22,15 @@ func (rt *_router) uploadPhoto(w http.ResponseWriter, r *http.Request, ps httpro
 
 	title := r.PostFormValue("title")
 	photofile, header, err := r.FormFile("photo") // Why doesn't there exist PostFormFile?
-	defer photofile.Close()
 
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
+	defer photofile.Close()
+
+	// Richiesta un po' 'ciotta eh?
 	if header.Size >= 52428800 {
 		w.WriteHeader(http.StatusRequestEntityTooLarge)
 		return
@@ -43,6 +45,8 @@ func (rt *_router) uploadPhoto(w http.ResponseWriter, r *http.Request, ps httpro
 
 	contenttype := http.DetectContentType(photobuff)
 
+	// We accept only content which starts with image/, therefore it makes sense to
+	// check it like that
 	if !strings.HasPrefix(contenttype, "image/") {
 		w.WriteHeader(http.StatusUnsupportedMediaType)
 		return
@@ -67,7 +71,7 @@ func (rt *_router) uploadPhoto(w http.ResponseWriter, r *http.Request, ps httpro
 		return
 	}
 
-	remainingsize := header.Size - 512 //maybe we've read the whole image already
+	remainingsize := header.Size - 512 // maybe we've read the whole image already
 	if remainingsize > 0 {
 		leftbuff := make([]byte, remainingsize)
 
@@ -77,7 +81,7 @@ func (rt *_router) uploadPhoto(w http.ResponseWriter, r *http.Request, ps httpro
 			return
 		}
 
-		photobuff = append(photobuff, leftbuff...)
+		photobuff = append(photobuff, leftbuff...) // join the buffers
 	}
 
 	id, err := rt.db.InsertPhoto(actx.ReqUserHandle, title, photobuff)
@@ -86,6 +90,8 @@ func (rt *_router) uploadPhoto(w http.ResponseWriter, r *http.Request, ps httpro
 		w.WriteHeader(http.StatusInternalServerError)
 		actx.Logger.WithError(err).Error("can't insert photo in db")
 	}
+
+	w.Header().Set("Content-Type", "application/json")
 
 	w.WriteHeader(http.StatusCreated)
 

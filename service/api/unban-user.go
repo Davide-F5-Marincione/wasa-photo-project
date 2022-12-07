@@ -34,7 +34,7 @@ func (rt *_router) unbanUser(w http.ResponseWriter, r *http.Request, ps httprout
 		return
 	}
 
-	//Check if unbanned
+	// Check if already unbanned
 	if !rt.db.CheckBan(actx.ReqUserHandle, otherhandle) {
 		w.WriteHeader(http.StatusNoContent)
 		return

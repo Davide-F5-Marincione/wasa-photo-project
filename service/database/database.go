@@ -38,21 +38,41 @@ import (
 
 // AppDatabase is the high level interface for the DB
 type AppDatabase interface {
-	GetUserDetails(userhandle string) (UserDetails, error)
-	GetUserDetailsAuth(auth int) (UserDetails, error)
 	InsertUser(details UserDetails) error
 	CheckAuthFree(auth int) bool
+	GetUserDetails(userhandle string) (UserDetails, error)
+	GetUserDetailsAuth(auth int) (UserDetails, error)
 	UpdateUsername(handle string, newname string) error
+
 	InsertBan(banisher string, banished string) error
 	CheckBan(banisher string, banished string) bool
 	RemoveBan(banisher string, banished string) error
+
 	InsertFollow(follower string, followed string) error
 	CheckFollow(follower string, followed string) bool
 	RemoveFollow(follower string, followed string) error
+
 	InsertPhoto(author string, title string, file []byte) (int, error)
 	GetPhotoDetails(id int) (PhotoDetails, error)
 	GetBlobPhoto(id int) ([]byte, error)
 	RemovePhoto(id int) error
+
+	CheckLike(liker string, photoid int) bool
+	InsertLike(liker string, photoid int) error
+	RemoveLike(liker string, photoid int) error
+
+	InsertComment(author string, content string, photoid int) (int, error)
+	GetComment(photoid int, id int) (Comment, error)
+	RemoveComment(photoid int, id int) error
+
+	// Batches gets
+	GetStream(userhandle string, toplimit int) ([]int, error)
+	GetFollowers(userhandle string, basehandle string) ([]UserAndDatetime, error)
+	GetFollowing(userhandle string, basehandle string) ([]UserAndDatetime, error)
+	GetPhotosProfile(userhandle string, toplimit int) ([]int, error)
+
+	GetPhotoComments(photoid int, commentlimit int) ([]CommentShow, error)
+	GetPhotoLikes(photoid int, basehandle string) ([]UserAndDatetime, error)
 
 	Ping() error
 }
@@ -138,7 +158,7 @@ func New(db *sql.DB) (AppDatabase, error) {
 			title TEXT NOT NULL,
 			uploadDate TEXT DEFAULT CURRENT_TIMESTAMP NOT NULL,
 			file BLOB NOT NULL,
-			commentsCounter INTEGER DEFAULT 0 NOT NULL,
+			commentsCounter INTEGER DEFAULT 1 NOT NULL,
 			FOREIGN KEY(author) REFERENCES users(handle)
 		);`)
 	if err != nil {
@@ -198,6 +218,22 @@ func New(db *sql.DB) (AppDatabase, error) {
 		BEGIN
 			DELETE FROM comments WHERE photoId = OLD.id;
 			DELETE FROM likes WHERE photoId = OLD.id;
+		END;`)
+
+	if err != nil {
+		return nil, err
+	}
+
+	// In case we may want to also delete users, still haven't designed option to do so
+	err = addTrigger(db, "userDelCascade", //First delete comments and likes, then photos, then follows and bans
+		`CREATE TRIGGER userDelCascade
+			BEFORE DELETE ON users
+		BEGIN
+			DELETE FROM comments WHERE author = OLD.handle;
+			DELETE FROM likes WHERE liker = OLD.handle;
+			DELETE FROM photos WHERE author = OLD.handle;
+			DELETE FROM follows WHERE follower = OLD.handle OR followed = OLD.handle;
+			DELETE FROM bans WHERE banisher = OLD.handle OR banished = OLD.handle;
 		END;`)
 
 	if err != nil {

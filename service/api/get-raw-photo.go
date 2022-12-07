@@ -9,7 +9,7 @@ import (
 )
 
 func (rt *_router) getRawPhoto(w http.ResponseWriter, r *http.Request, ps httprouter.Params, actx reqcontext.AuthRequestContext) {
-	photoid := ps.ByName("id")
+	photoid := ps.ByName("photo-id")
 
 	intphotoid, err := strconv.Atoi(photoid)
 
@@ -20,7 +20,7 @@ func (rt *_router) getRawPhoto(w http.ResponseWriter, r *http.Request, ps httpro
 
 	photodetails, err := rt.db.GetPhotoDetails(intphotoid)
 
-	// Probably id used
+	// Probably bad id used
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
 		return

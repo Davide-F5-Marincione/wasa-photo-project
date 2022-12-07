@@ -524,6 +524,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/photosbatch"
+        '400':
+          description: Request was badly formed (photos-limit should be a number)
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '404':
