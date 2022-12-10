@@ -194,7 +194,7 @@ func New(db *sql.DB) (AppDatabase, error) {
 	}
 
 	/// TRIGGERS
-	err = addTrigger(db, "commentsIncr", //To increment the comment id and add a date
+	err = addTrigger(db, "commentsIncr", // To increment the comment id and add a date
 		`CREATE TRIGGER commentsIncr
 			AFTER INSERT ON comments
 		BEGIN
@@ -212,7 +212,7 @@ func New(db *sql.DB) (AppDatabase, error) {
 		return nil, err
 	}
 
-	err = addTrigger(db, "photoDelCascade", //To delete comments and likes
+	err = addTrigger(db, "photoDelCascade", // To delete comments and likes
 		`CREATE TRIGGER photoDelCascade
 			BEFORE DELETE ON photos
 		BEGIN
@@ -225,7 +225,7 @@ func New(db *sql.DB) (AppDatabase, error) {
 	}
 
 	// In case we may want to also delete users, still haven't designed option to do so
-	err = addTrigger(db, "userDelCascade", //First delete comments and likes, then photos, then follows and bans
+	err = addTrigger(db, "userDelCascade", // First delete comments and likes, then photos, then follows and bans
 		`CREATE TRIGGER userDelCascade
 			BEFORE DELETE ON users
 		BEGIN
