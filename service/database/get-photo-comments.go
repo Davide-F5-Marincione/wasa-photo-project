@@ -44,8 +44,11 @@ func (db *appdbimpl) GetPhotoComments(photoid int, commentlimit int) ([]CommentS
 
 	i := 0
 	for res.Next() {
-		res.Scan(&(ids[i].ID), &(ids[i].Author), &(ids[i].Content), &(ids[i].Since)) // Since I can't do ids[i++]...
-		i++                                                                          // This warning is outrageous, i++ is ugly by itself!
+		err = res.Scan(&(ids[i].ID), &(ids[i].Author), &(ids[i].Content), &(ids[i].Since)) // Since I can't do ids[i++]...
+		i++                                                                                // This warning is outrageous, i++ is ugly by itself!
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	if err = res.Err(); err != nil {

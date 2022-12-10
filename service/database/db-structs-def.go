@@ -16,18 +16,18 @@ type UserAndDatetime struct {
 }
 
 // Follow is needed to handle the db schema 'follows'
-type Follow struct {
-	follower string
-	followed string
-	since    string
-}
+// type Follow struct {
+// 	follower string
+// 	followed string
+// 	since    string
+// }
 
 // Ban is needed to handle the db schema 'bans'
-type Ban struct {
-	banisher string
-	banished string
-	since    string
-}
+// type Ban struct {
+// 	banisher string
+// 	banished string
+// 	since    string
+// }
 
 // PhotoDetails contains all the useful ready-at-hand
 // information of a photo
@@ -39,11 +39,11 @@ type PhotoDetails struct {
 }
 
 // Like is needed to handle the db schema 'likes'
-type Like struct {
-	photoID int
-	liker   string
-	since   string
-}
+// type Like struct {
+// 	photoID int
+// 	liker   string
+// 	since   string
+// }
 
 // Comment is needed to handle the db schema 'comments'
 type Comment struct {
