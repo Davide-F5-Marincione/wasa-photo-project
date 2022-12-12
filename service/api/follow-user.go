@@ -26,7 +26,7 @@ func (rt *_router) followUser(w http.ResponseWriter, r *http.Request, ps httprou
 
 	otherhandle := ps.ByName("other-handle")
 
-	resuser, err = rt.db.GetUserDetails(otherhandle)
+	_, err = rt.db.GetUserDetails(otherhandle)
 
 	// Probably bad user handle used
 	if err != nil {
