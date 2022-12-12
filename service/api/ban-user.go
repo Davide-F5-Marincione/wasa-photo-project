@@ -26,7 +26,7 @@ func (rt *_router) banUser(w http.ResponseWriter, r *http.Request, ps httprouter
 
 	otherhandle := ps.ByName("other-handle")
 
-	resuser, err = rt.db.GetUserDetails(otherhandle)
+	_, err = rt.db.GetUserDetails(otherhandle)
 
 	// Probably bad user handle used
 	if err != nil {
