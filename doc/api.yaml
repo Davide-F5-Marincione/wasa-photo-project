@@ -275,34 +275,25 @@ components:
           $ref: "#/components/schemas/handlesxdatebatch"
         following-running-batch:
           $ref: "#/components/schemas/handlesxdatebatch"
-    
-    levdist:
-      title: A levenshtein distance value
-      description: The levenshtein distance calculated.
-      type: integer
-      format: int64
-      minimum: 0
 
-    namehandleanddist:
-      title: A name, a handle and a distance
+    nameandhandle:
+      title: A name and a handle
       description: |-
         Structure used in the search for a specific user
-        starting from its username, the distance is a levenshtein one.
+        starting from its username.
       type: object
       properties:
         name:
           $ref: "#/components/schemas/username"
         handle:
           $ref: "#/components/schemas/userhandle"
-        distance:
-          $ref: "#/components/schemas/levdist"
     
-    nameshandlesanddists:
-      title: List of Names Handles and Distances
+    namesandhandles:
+      title: List of Names and Handles
       description: The response to a request searching for the handle of a user
       type: array
       items:
-        $ref: "#/components/schemas/namehandleanddist"
+        $ref: "#/components/schemas/nameandhandle"
       minItems: 0
       maxItems: 64
 
@@ -366,9 +357,9 @@ paths:
             $ref: "#/components/schemas/username"
           required: true
         - in: query
-          name: distance-base
+          name: name-base
           schema:
-            $ref: "#/components/schemas/levdist"
+            $ref: "#/components/schemas/username"
           required: false
         - in: query
           name: handle-base
@@ -382,7 +373,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/nameshandlesanddists"
+                $ref: "#/components/schemas/namesandhandles"
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '404':
