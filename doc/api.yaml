@@ -374,10 +374,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/namesandhandles"
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-        '404':
-          description: User not found
+        '400':
+          description: User name can't be empty or either both bases are non-existent or are both assigned!
         '500':
           $ref: '#/components/responses/InternalServerError'
   /users/{user-handle}:

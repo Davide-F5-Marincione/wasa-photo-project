@@ -43,6 +43,7 @@ type AppDatabase interface {
 	GetUserDetails(userhandle string) (UserDetails, error)
 	GetUserDetailsAuth(auth int) (UserDetails, error)
 	UpdateUsername(handle string, newname string) error
+	FindSimilar(inputname string, basehandle string, basename string) ([]NameAndHandle, error)
 
 	InsertBan(banisher string, banished string) error
 	CheckBan(banisher string, banished string) bool

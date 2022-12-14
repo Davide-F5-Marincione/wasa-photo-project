@@ -8,6 +8,13 @@ type UserDetails struct {
 	Auth   int
 }
 
+// NameAndHandle contains an handle and
+// a username, this is useful when requesting for a user by guessing their name
+type NameAndHandle struct {
+	Handle string `json:"handle"`
+	Name   string `json:"name"`
+}
+
 // UserAndDatetime contains a handle and a datetime,
 // this is useful for general lists of users... and related timestamps
 type UserAndDatetime struct {

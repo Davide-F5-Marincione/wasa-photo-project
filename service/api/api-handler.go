@@ -8,6 +8,7 @@ import (
 func (rt *_router) Handler() http.Handler {
 	// Register routes
 	rt.router.POST("/users", rt.wrap(rt.doLogin))
+	rt.router.GET("/users", rt.findUserHandle)
 	rt.router.PUT("/users/:user-handle", rt.authWrap(rt.setMyUserName))
 
 	rt.router.PUT("/users/:user-handle/bans/:other-handle", rt.authWrap(rt.banUser))
