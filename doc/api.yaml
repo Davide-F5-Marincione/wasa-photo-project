@@ -275,6 +275,36 @@ components:
           $ref: "#/components/schemas/handlesxdatebatch"
         following-running-batch:
           $ref: "#/components/schemas/handlesxdatebatch"
+    
+    levdist:
+      title: A levenshtein distance value
+      description: The levenshtein distance calculated.
+      type: integer
+      format: int64
+      minimum: 0
+
+    namehandleanddist:
+      title: A name, a handle and a distance
+      description: |-
+        Structure used in the search for a specific user
+        starting from its username, the distance is a levenshtein one.
+      type: object
+      properties:
+        name:
+          $ref: "#/components/schemas/username"
+        handle:
+          $ref: "#/components/schemas/userhandle"
+        distance:
+          $ref: "#/components/schemas/levdist"
+    
+    nameshandlesanddists:
+      title: List of Names Handles and Distances
+      description: The response to a request searching for the handle of a user
+      type: array
+      items:
+        $ref: "#/components/schemas/namehandleanddist"
+      minItems: 0
+      maxItems: 64
 
     loginresponse:
       title: Login response
@@ -324,13 +354,11 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
     get:
-      security:
-      - bearerAuth: []
       tags: ["user"]
-      summary: Get user profile
+      summary: Find user handle
       description: |-
-        Requests a user's profile via its username, the auth token is needed
-        since the requesting user may be blocked by the other.
+        Searches for a user's handle via its username, there's no need for auth tokens since
+        this doesn't entail getting any information form a user (except from its handle)
       parameters:
         - in: query
           name: user-name
@@ -338,28 +366,23 @@ paths:
             $ref: "#/components/schemas/username"
           required: true
         - in: query
-          name: photos-limit
+          name: distance-base
           schema:
-            $ref: "#/components/schemas/photoid"
+            $ref: "#/components/schemas/levdist"
           required: false
         - in: query
-          name: followers-base
+          name: handle-base
           schema:
             $ref: "#/components/schemas/userhandle"
           required: false
-        - in: query
-          name: following-base
-          schema:
-            $ref: "#/components/schemas/userhandle"
-          required: false
-      operationId: getUserProfile
+      operationId: findUserHandle
       responses:
         '200':
-          description: Returning user's profile
+          description: Returning possible user handles roughly matching the username
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/profile"
+                $ref: "#/components/schemas/nameshandlesanddists"
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '404':
@@ -392,6 +415,44 @@ paths:
           description: Username change successful
         '400':
           description: Unacceptable username
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: User not found
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    get:
+      security:
+      - bearerAuth: []
+      tags: ["user"]
+      summary: Get user profile
+      description: |-
+        Requests a user's profile via its userhandle, the auth token is needed
+        since the requesting user may be blocked by the other.
+      parameters:
+        - in: query
+          name: photos-limit
+          schema:
+            $ref: "#/components/schemas/photoid"
+          required: false
+        - in: query
+          name: followers-base
+          schema:
+            $ref: "#/components/schemas/userhandle"
+          required: false
+        - in: query
+          name: following-base
+          schema:
+            $ref: "#/components/schemas/userhandle"
+          required: false
+      operationId: getUserProfile
+      responses:
+        '200':
+          description: Returning user's profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/profile"
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '404':
