@@ -3,22 +3,14 @@ package database
 // UserDetails contains all the useful ready-at-hand
 // information of a user
 type UserDetails struct {
-	Handle string
-	Name   string
-	Auth   int
+	Name string
+	Auth int
 }
 
-// NameAndHandle contains an handle and
-// a username, this is useful when requesting for a user by guessing their name
-type NameAndHandle struct {
-	Handle string `json:"handle"`
-	Name   string `json:"name"`
-}
-
-// UserAndDatetime contains a handle and a datetime,
+// UserAndDatetime contains a name and a datetime,
 // this is useful for general lists of users... and related timestamps
 type UserAndDatetime struct {
-	Handle       string `json:"handle"`
+	Name         string `json:"name"`
 	RelevantDate string `json:"relevantdate"`
 }
 

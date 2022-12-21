@@ -52,48 +52,34 @@ components:
       description: |-
         RegEx definition of an acceptable username,
         aka almost anything. (Thanks prof for the idea to use regexes)
-        Can change in time (is NOT the same as the handle!).
       type: string
       example: Davide Marincione
       pattern: '^.{4,32}$'
       minLength: 4
       maxLength: 32
-    userhandle:
-      title: User handle
+    usernamexdate:
+      title: User name and a date
       description: |-
-        The user's handle, public for linking and general purposes with respect to other users,
-        created by the user at registration (and used to login).
-        Is meant to never change (unlike the username) and be unique.
-        Is meant to be of the form <1-27 chars>#<4-nums>.
-        (Btw, inspired from existing videogame naming schemes)
-      type: string
-      pattern: '^.{1,27}#\d{4}$'
-      example: "davide#7734"
-      minLength: 6
-      maxLength: 32
-    userhandlexdate:
-      title: User handle and a date
-      description: |-
-        Same stuff as the user handle, but it may be useful to return it with a date (for likes for example).
+        Same stuff as the user name, but it may be useful to return it with a date (for likes for example).
       type: object
       properties:
-        handle:
-          $ref: "#/components/schemas/userhandle"
+        name:
+          $ref: "#/components/schemas/username"
         relevantdate:
           $ref: "#/components/schemas/mydatetime"
-    handlesxdatebatch:
-      title: Batch of handles with dates
+    namesxdatebatch:
+      title: Batch of names with dates
       description: |-
-        Since a list of handles is useful in situations
+        Since a list of names is useful in situations
         where arbitrary number of users may be listed
         (such as to return list of followers,
         a following, banned users or those who've
         put a like on a photo) but, at the same time,
         arbitrarily long lists are unacceptable, it is
-        paramount to produce and handle (no pun intended)
+        paramount to produce and handle
         arbitrary lists of users via fixed size batches.
         The idea being that, since in no case we need to
-        produce lists of handles in a particular order, we 
+        produce lists of names in a particular order, we 
         decree they will be handled via lexicographic
         order for semplicity.
 
@@ -101,13 +87,13 @@ components:
         batches will either:
     
           a. Request with a "base", leading to a response
-          containing handles whose values are strictly larger
+          containing names whose values are strictly larger
           than the "base".
   
           b. Request with no "base", leading to a response
-          containing handles whose values are the smallest.
+          containing names whose values are the smallest.
       
-        For every case of handling lists of userhandles it is
+        For every case of handling lists of usernames it is
         assumed that, from the client side, the "base" will
         be set equal to the last element in the list received
         for the same functionality.
@@ -118,7 +104,7 @@ components:
         this is an acceptable compromise.
       type: array
       items:
-        $ref: "#/components/schemas/userhandlexdate"
+        $ref: "#/components/schemas/usernamexdate"
       minItems: 0
       maxItems: 64
 
@@ -150,7 +136,7 @@ components:
     photosbatch:
       title: Batch of photo ids
       description: |-
-        Like the situation with lists of userhandles,
+        Like the situation with lists of usernames,
         an arbitrary sized list of photo ids may be
         useful to handle a user's stream or the view
         of a profile- since photo ids are distributed
@@ -174,7 +160,7 @@ components:
         functionality.
 
         Like the problem with live-updating the list in the
-        user handles, we have to accept an half-measure where
+        user names, we have to accept an half-measure where
         the list may not fully represent the server state-
         this, again, is an acceptable compromise.
       type: array
@@ -205,7 +191,7 @@ components:
         comment-text:
           $ref: "#/components/schemas/text"
         comment-author:
-          $ref: "#/components/schemas/userhandle"
+          $ref: "#/components/schemas/username"
         comment-date:
           $ref: "#/components/schemas/mydatetime"
         comment-id:
@@ -256,11 +242,11 @@ components:
         photo-title:
           $ref: "#/components/schemas/title"
         photo-author:
-          $ref: "#/components/schemas/userhandle"
+          $ref: "#/components/schemas/username"
         comments-running-batch:
           $ref: "#/components/schemas/commentsbatch"
         likes-running-batch:
-          $ref: "#/components/schemas/handlesxdatebatch"
+          $ref: "#/components/schemas/namesxdatebatch"
         photo-date:
           $ref: "#/components/schemas/mydatetime"
   
@@ -272,42 +258,28 @@ components:
         photos-running-batch:
           $ref: "#/components/schemas/photosbatch"
         followers-running-batch:
-          $ref: "#/components/schemas/handlesxdatebatch"
+          $ref: "#/components/schemas/namesxdatebatch"
         following-running-batch:
-          $ref: "#/components/schemas/handlesxdatebatch"
-
-    nameandhandle:
-      title: A name and a handle
-      description: |-
-        Structure used in the search for a specific user
-        starting from its username.
-      type: object
-      properties:
-        name:
-          $ref: "#/components/schemas/username"
-        handle:
-          $ref: "#/components/schemas/userhandle"
+          $ref: "#/components/schemas/namesxdatebatch"
     
-    namesandhandles:
-      title: List of Names and Handles
-      description: The response to a request searching for the handle of a user
+    listofnames:
+      title: List of Names
+      description: The response to a request searching for a user
       type: array
       items:
-        $ref: "#/components/schemas/nameandhandle"
+        $ref: "#/components/schemas/username"
       minItems: 0
       maxItems: 64
 
     loginresponse:
       title: Login response
       description: |-
-        The response to a login, with both the handle, the username
+        The response to a login, with both the username
         and the authtoken. For good measure
       type: object
       properties:
         resp-username:
           $ref: "#/components/schemas/username"
-        resp-userhandle:
-          $ref: "#/components/schemas/userhandle"
         resp-authtoken:
           $ref: "#/components/schemas/authtoken"
   
@@ -323,9 +295,9 @@ paths:
       operationId: doLogin
       parameters:
         - in: query
-          name: user-handle
+          name: user-name
           schema:
-            $ref: "#/components/schemas/userhandle"
+            $ref: "#/components/schemas/username"
           required: true
       responses:
         '200':
@@ -346,10 +318,10 @@ paths:
           $ref: '#/components/responses/InternalServerError'
     get:
       tags: ["user"]
-      summary: Find user handle
+      summary: Find user
       description: |-
-        Searches for a user's handle via its username, there's no need for auth tokens since
-        this doesn't entail getting any information form a user (except from its handle)
+        Searches for a user via its username, there's no need for auth tokens since
+        this doesn't entail getting any information from a user
       parameters:
         - in: query
           name: user-name
@@ -361,29 +333,24 @@ paths:
           schema:
             $ref: "#/components/schemas/username"
           required: false
-        - in: query
-          name: handle-base
-          schema:
-            $ref: "#/components/schemas/userhandle"
-          required: false
-      operationId: findUserHandle
+      operationId: findUser
       responses:
         '200':
-          description: Returning possible user handles roughly matching the username
+          description: Returning possible user names roughly matching the requested one
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/namesandhandles"
+                $ref: "#/components/schemas/listofnames"
         '400':
           description: User name can't be empty or either both bases are non-existent or are both assigned!
         '500':
           $ref: '#/components/responses/InternalServerError'
-  /users/{user-handle}:
+  /users/{user-name}:
     parameters:
       - in: path
-        name: user-handle
+        name: user-name
         schema:
-          $ref: "#/components/schemas/userhandle"
+          $ref: "#/components/schemas/username"
         required: true
     put:
       security:
@@ -416,7 +383,7 @@ paths:
       tags: ["user"]
       summary: Get user profile
       description: |-
-        Requests a user's profile via its userhandle, the auth token is needed
+        Requests a user's profile via its username, the auth token is needed
         since the requesting user may be blocked by the other.
       parameters:
         - in: query
@@ -427,12 +394,12 @@ paths:
         - in: query
           name: followers-base
           schema:
-            $ref: "#/components/schemas/userhandle"
+            $ref: "#/components/schemas/username"
           required: false
         - in: query
           name: following-base
           schema:
-            $ref: "#/components/schemas/userhandle"
+            $ref: "#/components/schemas/username"
           required: false
       operationId: getUserProfile
       responses:
@@ -448,17 +415,17 @@ paths:
           description: User not found
         '500':
           $ref: '#/components/responses/InternalServerError'
-  /users/{user-handle}/follows/{other-handle}:
+  /users/{user-name}/follows/{other-name}:
     parameters:
       - in: path
-        name: user-handle
+        name: user-name
         schema:
-          $ref: "#/components/schemas/userhandle"
+          $ref: "#/components/schemas/username"
         required: true
       - in: path
-        name: other-handle
+        name: other-name
         schema:
-          $ref: "#/components/schemas/userhandle"
+          $ref: "#/components/schemas/username"
         required: true
     put:
       security:
@@ -497,17 +464,17 @@ paths:
           description: Other or This user not found
         '500':
           $ref: '#/components/responses/InternalServerError'
-  /users/{user-handle}/bans/{other-handle}:
+  /users/{user-name}/bans/{other-name}:
     parameters:
       - in: path
-        name: user-handle
+        name: user-name
         schema:
-          $ref: "#/components/schemas/userhandle"
+          $ref: "#/components/schemas/username"
         required: true
       - in: path
-        name: other-handle
+        name: other-name
         schema:
-          $ref: "#/components/schemas/userhandle"
+          $ref: "#/components/schemas/username"
         required: true
     put:
       security:
@@ -546,12 +513,12 @@ paths:
           description: Other user not found
         '500':
           $ref: '#/components/responses/InternalServerError'
-  /users/{user-handle}/stream:
+  /users/{user-name}/stream:
     parameters:
       - in: path
-        name: user-handle
+        name: user-name
         schema:
-          $ref: "#/components/schemas/userhandle"
+          $ref: "#/components/schemas/username"
         required: true
     get:
       security:
@@ -666,7 +633,7 @@ paths:
         - in: query
           name: likes-base
           schema:
-            $ref: "#/components/schemas/userhandle"
+            $ref: "#/components/schemas/username"
           required: false
       operationId: getPhotoPost
       responses:
@@ -722,7 +689,7 @@ paths:
           description: Photo not found
         '500':
           $ref: '#/components/responses/InternalServerError'
-  /photos/{photo-id}/likes/{user-handle}:
+  /photos/{photo-id}/likes/{user-name}:
     parameters:
       - in: path
         name: photo-id
@@ -730,9 +697,9 @@ paths:
           $ref: "#/components/schemas/photoid"
         required: true
       - in: path
-        name: user-handle
+        name: user-name
         schema:
-          $ref: "#/components/schemas/userhandle"
+          $ref: "#/components/schemas/username"
         required: true
     put:
       security:

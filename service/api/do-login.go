@@ -12,17 +12,16 @@ import (
 )
 
 type loginResponse struct {
-	Name   string `json:"resp-username"`
-	Handle string `json:"resp-userhandle"`
-	Auth   int    `json:"resp-authtoken"`
+	Name string `json:"resp-username"`
+	Auth int    `json:"resp-authtoken"`
 }
 
 func (rt *_router) doLogin(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) {
-	userhandle := r.URL.Query().Get("user-handle")
-	check, err := regexp.Match("^.{1,27}#\\d{4}$", []byte(userhandle))
+	username := r.URL.Query().Get("user-name")
+	check, err := regexp.Match("^.{4,32}", []byte(username))
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		ctx.Logger.WithError(err).Error("can't regexp user-handle")
+		ctx.Logger.WithError(err).Error("can't regexp user-name")
 		return
 	}
 	if !check {
@@ -32,14 +31,14 @@ func (rt *_router) doLogin(w http.ResponseWriter, r *http.Request, ps httprouter
 
 	w.Header().Set("Content-Type", "application/json")
 
-	details, err := rt.db.GetUserDetails(userhandle)
+	details, err := rt.db.GetUserDetails(username)
 	if err != nil {
 		// Hey, this guy doesn't exist in the db, let's register him
 		randauth := rand.Int63()
-		for !rt.db.CheckAuthFree(int(randauth)) {
+		for rt.db.CheckAuth(int(randauth)) != "" {
 			randauth = rand.Int63()
 		}
-		details = database.UserDetails{Handle: userhandle, Name: userhandle, Auth: int(randauth)}
+		details = database.UserDetails{Name: username, Auth: int(randauth)}
 		err = rt.db.InsertUser(details)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
@@ -49,7 +48,7 @@ func (rt *_router) doLogin(w http.ResponseWriter, r *http.Request, ps httprouter
 		w.WriteHeader(http.StatusCreated)
 	}
 
-	resp := loginResponse{Name: details.Name, Handle: details.Handle, Auth: details.Auth}
+	resp := loginResponse{Name: details.Name, Auth: details.Auth}
 
 	err = json.NewEncoder(w).Encode(resp)
 	if err != nil {

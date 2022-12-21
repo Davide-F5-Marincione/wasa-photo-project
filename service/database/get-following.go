@@ -7,19 +7,19 @@ const MaxFollowing int = 64
 
 // GetName is an example that shows you how to query data
 
-func (db *appdbimpl) GetFollowing(userhandle string, basehandle string) ([]UserAndDatetime, error) {
+func (db *appdbimpl) GetFollowing(username string, basename string) ([]UserAndDatetime, error) {
 	var ids []UserAndDatetime = make([]UserAndDatetime, MaxFollowing)
 	var res *sql.Rows
 	var err error
 
-	if basehandle == "" {
+	if basename == "" {
 		res, err = db.c.Query(`
 			SELECT followed, since
 			FROM follows
 			WHERE follower=?
 			ORDER BY followed ASC
 			LIMIT ?
-			`, userhandle, MaxFollowing)
+			`, username, MaxFollowing)
 	} else {
 		res, err = db.c.Query(`
 			SELECT followed, since
@@ -27,7 +27,7 @@ func (db *appdbimpl) GetFollowing(userhandle string, basehandle string) ([]UserA
 			WHERE follower=? and follower > ?
 			ORDER BY followed ASC
 			LIMIT ?
-			`, userhandle, basehandle, MaxFollowing)
+			`, username, basename, MaxFollowing)
 	}
 
 	if err != nil {
@@ -36,8 +36,8 @@ func (db *appdbimpl) GetFollowing(userhandle string, basehandle string) ([]UserA
 
 	i := 0
 	for res.Next() {
-		err = res.Scan(&(ids[i].Handle), &(ids[i].RelevantDate)) // Since I can't do ids[i++]...
-		i++                                                      // This warning is outrageous, i++ is ugly by itself!
+		err = res.Scan(&(ids[i].Name), &(ids[i].RelevantDate)) // Since I can't do ids[i++]...
+		i++                                                    // This warning is outrageous, i++ is ugly by itself!
 		if err != nil {
 			return nil, err
 		}

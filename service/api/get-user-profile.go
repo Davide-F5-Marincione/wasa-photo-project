@@ -11,24 +11,24 @@ import (
 )
 
 type userProfileResponse struct {
-	PostIDs          []int                      `json:"photos-running-batch"`
-	FollowersHandles []database.UserAndDatetime `json:"followers-running-batch"`
-	FollowingHandles []database.UserAndDatetime `json:"following-running-batch"`
+	PostIDs        []int                      `json:"photos-running-batch"`
+	FollowersNames []database.UserAndDatetime `json:"followers-running-batch"`
+	FollowingNames []database.UserAndDatetime `json:"following-running-batch"`
 }
 
 func (rt *_router) getUserProfile(w http.ResponseWriter, r *http.Request, ps httprouter.Params, actx reqcontext.AuthRequestContext) {
-	givenhandle := ps.ByName("user-handle")
+	givenname := ps.ByName("user-name")
 
-	resuser, err := rt.db.GetUserDetails(givenhandle)
+	resuser, err := rt.db.GetUserDetails(givenname)
 
-	// Probably bad user handle used
+	// Probably bad user name used
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
 	// Are we allowed to see this user?
-	if rt.db.CheckBan(resuser.Handle, actx.ReqUserHandle) {
+	if rt.db.CheckBan(resuser.Name, actx.ReqUserName) {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
@@ -46,7 +46,7 @@ func (rt *_router) getUserProfile(w http.ResponseWriter, r *http.Request, ps htt
 
 	var photos []int
 
-	photos, err = rt.db.GetPhotosProfile(givenhandle, intphotolimit)
+	photos, err = rt.db.GetPhotosProfile(givenname, intphotolimit)
 
 	// Maybe empty result may throw an error here? Will see.
 	if err != nil {
@@ -58,7 +58,7 @@ func (rt *_router) getUserProfile(w http.ResponseWriter, r *http.Request, ps htt
 	followersbase := r.URL.Query().Get("followers-base")
 	var followers []database.UserAndDatetime
 
-	followers, err = rt.db.GetFollowers(givenhandle, followersbase)
+	followers, err = rt.db.GetFollowers(givenname, followersbase)
 
 	// Maybe empty result may throw an error here? Will see.
 	if err != nil {
@@ -70,7 +70,7 @@ func (rt *_router) getUserProfile(w http.ResponseWriter, r *http.Request, ps htt
 	followingbase := r.URL.Query().Get("following-base")
 	var following []database.UserAndDatetime
 
-	following, err = rt.db.GetFollowing(givenhandle, followingbase)
+	following, err = rt.db.GetFollowing(givenname, followingbase)
 
 	// Maybe empty result may throw an error here? Will see.
 	if err != nil {
@@ -82,8 +82,8 @@ func (rt *_router) getUserProfile(w http.ResponseWriter, r *http.Request, ps htt
 	var res userProfileResponse
 
 	res.PostIDs = photos
-	res.FollowersHandles = followers
-	res.FollowingHandles = following
+	res.FollowersNames = followers
+	res.FollowingNames = following
 
 	w.Header().Set("Content-Type", "application/json")
 	err = json.NewEncoder(w).Encode(res)

@@ -10,18 +10,18 @@ import (
 )
 
 func (rt *_router) setMyUserName(w http.ResponseWriter, r *http.Request, ps httprouter.Params, actx reqcontext.AuthRequestContext) {
-	givenhandle := ps.ByName("user-handle")
+	givenname := ps.ByName("user-name")
 
-	resuser, err := rt.db.GetUserDetails(givenhandle)
+	resuser, err := rt.db.GetUserDetails(givenname)
 
-	// Probably bad user handle used
+	// Probably bad user name used
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
 	// The given authorization is for another user!
-	if resuser.Handle != actx.ReqUserHandle {
+	if resuser.Name != actx.ReqUserName {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
@@ -44,7 +44,7 @@ func (rt *_router) setMyUserName(w http.ResponseWriter, r *http.Request, ps http
 		return
 	}
 
-	err = rt.db.UpdateUsername(actx.ReqUserHandle, newname)
+	err = rt.db.UpdateUsername(actx.ReqUserName, newname)
 
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)

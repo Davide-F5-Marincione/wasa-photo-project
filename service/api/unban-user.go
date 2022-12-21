@@ -8,39 +8,39 @@ import (
 )
 
 func (rt *_router) unbanUser(w http.ResponseWriter, r *http.Request, ps httprouter.Params, actx reqcontext.AuthRequestContext) {
-	givenhandle := ps.ByName("user-handle")
+	givenname := ps.ByName("user-name")
 
-	resuser, err := rt.db.GetUserDetails(givenhandle)
+	resuser, err := rt.db.GetUserDetails(givenname)
 
-	// Probably bad user handle used
+	// Probably bad user name used
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
 	// The given authorization is for another user!
-	if resuser.Handle != actx.ReqUserHandle {
+	if resuser.Name != actx.ReqUserName {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
-	otherhandle := ps.ByName("other-handle")
+	othername := ps.ByName("other-name")
 
-	_, err = rt.db.GetUserDetails(otherhandle)
+	_, err = rt.db.GetUserDetails(othername)
 
-	// Probably bad user handle used
+	// Probably bad user name used
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
 	// Check if already unbanned
-	if !rt.db.CheckBan(actx.ReqUserHandle, otherhandle) {
+	if !rt.db.CheckBan(actx.ReqUserName, othername) {
 		w.WriteHeader(http.StatusNoContent)
 		return
 	}
 
-	err = rt.db.RemoveBan(actx.ReqUserHandle, otherhandle)
+	err = rt.db.RemoveBan(actx.ReqUserName, othername)
 
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)

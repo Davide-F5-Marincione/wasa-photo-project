@@ -7,7 +7,7 @@ const MaxIDs int = 64
 
 // GetName is an example that shows you how to query data
 
-func (db *appdbimpl) GetStream(userhandle string, toplimit int) ([]int, error) {
+func (db *appdbimpl) GetStream(username string, toplimit int) ([]int, error) {
 	var ids []int = make([]int, MaxIDs)
 	var res *sql.Rows
 	var err error
@@ -29,7 +29,7 @@ func (db *appdbimpl) GetStream(userhandle string, toplimit int) ([]int, error) {
 				OR author = ?
 			ORDER BY id DESC
 			LIMIT ?
-			`, userhandle, userhandle, userhandle, MaxIDs)
+			`, username, username, username, MaxIDs)
 	} else {
 		res, err = db.c.Query(`
 			SELECT id
@@ -47,7 +47,7 @@ func (db *appdbimpl) GetStream(userhandle string, toplimit int) ([]int, error) {
 				OR author = ?) AND id < ?
 			ORDER BY id DESC
 			LIMIT ?
-			`, userhandle, userhandle, userhandle, toplimit, MaxIDs)
+			`, username, username, username, toplimit, MaxIDs)
 	}
 
 	if err != nil {

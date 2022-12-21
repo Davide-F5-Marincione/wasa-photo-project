@@ -9,18 +9,18 @@ import (
 )
 
 func (rt *_router) unlikePhoto(w http.ResponseWriter, r *http.Request, ps httprouter.Params, actx reqcontext.AuthRequestContext) {
-	givenhandle := ps.ByName("user-handle")
+	givenname := ps.ByName("user-name")
 
-	resuser, err := rt.db.GetUserDetails(givenhandle)
+	resuser, err := rt.db.GetUserDetails(givenname)
 
-	// Probably bad user handle used
+	// Probably bad user name used
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
 	// The given authorization is for another user!
-	if resuser.Handle != actx.ReqUserHandle {
+	if resuser.Name != actx.ReqUserName {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
@@ -44,18 +44,18 @@ func (rt *_router) unlikePhoto(w http.ResponseWriter, r *http.Request, ps httpro
 
 	// TODO-Philosophical: can we unlike when we are banned by the author?
 	// We may be banned from the author!
-	if rt.db.CheckBan(photodetails.Author, actx.ReqUserHandle) {
+	if rt.db.CheckBan(photodetails.Author, actx.ReqUserName) {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
 	// Check if already unliked
-	if !rt.db.CheckLike(actx.ReqUserHandle, intphotoid) {
+	if !rt.db.CheckLike(actx.ReqUserName, intphotoid) {
 		w.WriteHeader(http.StatusNoContent)
 		return
 	}
 
-	err = rt.db.RemoveLike(actx.ReqUserHandle, intphotoid)
+	err = rt.db.RemoveLike(actx.ReqUserName, intphotoid)
 
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)

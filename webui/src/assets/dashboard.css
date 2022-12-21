@@ -1,5 +1,7 @@
 body {
 	font-size: 0.875rem;
+	color: #fff;
+	background-color: #31363d;
 }
 
 .feather {
@@ -32,6 +34,13 @@ body {
 	.sidebar {
 		top: 5rem;
 	}
+}
+
+input {
+	color: rgb(0, 0, 0);
+	text-emphasis-color: #000;
+	background-color: #f0f7ff;
+	border-color: #31363d00;
 }
 
 .sidebar-sticky {
@@ -70,7 +79,7 @@ body {
 .navbar-brand {
 	padding-top: 0.75rem;
 	padding-bottom: 0.75rem;
-	background-color: rgba(0 0 0 / 25%);
+	background-color: rgba(0, 255, 136, 0.25);
 	box-shadow: inset -1px 0 0 rgba(0 0 0 / 25%);
 }
 

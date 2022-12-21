@@ -7,7 +7,7 @@ const MaxPhotos int = 64
 
 // GetName is an example that shows you how to query data
 
-func (db *appdbimpl) GetPhotosProfile(userhandle string, toplimit int) ([]int, error) {
+func (db *appdbimpl) GetPhotosProfile(username string, toplimit int) ([]int, error) {
 	var ids []int = make([]int, MaxPhotos)
 	var res *sql.Rows
 	var err error
@@ -20,7 +20,7 @@ func (db *appdbimpl) GetPhotosProfile(userhandle string, toplimit int) ([]int, e
 				author = ?
 			ORDER BY id DESC
 			LIMIT ?
-			`, userhandle, MaxPhotos)
+			`, username, MaxPhotos)
 
 	} else {
 		res, err = db.c.Query(`
@@ -30,7 +30,7 @@ func (db *appdbimpl) GetPhotosProfile(userhandle string, toplimit int) ([]int, e
 				author = ? AND id < ?
 			ORDER BY id DESC
 			LIMIT ?
-			`, userhandle, toplimit, MaxPhotos)
+			`, username, toplimit, MaxPhotos)
 	}
 
 	if err != nil {

@@ -30,7 +30,7 @@ func (rt *_router) commentPhoto(w http.ResponseWriter, r *http.Request, ps httpr
 	}
 
 	// We may be banned from the author!
-	if rt.db.CheckBan(photodetails.Author, actx.ReqUserHandle) {
+	if rt.db.CheckBan(photodetails.Author, actx.ReqUserName) {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
@@ -59,7 +59,7 @@ func (rt *_router) commentPhoto(w http.ResponseWriter, r *http.Request, ps httpr
 		return
 	}
 
-	id, err := rt.db.InsertComment(actx.ReqUserHandle, content, intphotoid)
+	id, err := rt.db.InsertComment(actx.ReqUserName, content, intphotoid)
 
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)

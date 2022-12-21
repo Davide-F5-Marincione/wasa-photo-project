@@ -5,19 +5,19 @@ import "database/sql"
 // MaxFollowers is the maximum number of returned ids on a request
 const MaxFollowers int = 64
 
-func (db *appdbimpl) GetFollowers(userhandle string, basehandle string) ([]UserAndDatetime, error) {
+func (db *appdbimpl) GetFollowers(username string, basename string) ([]UserAndDatetime, error) {
 	var ids []UserAndDatetime = make([]UserAndDatetime, MaxFollowers)
 	var res *sql.Rows
 	var err error
 
-	if basehandle == "" {
+	if basename == "" {
 		res, err = db.c.Query(`
 			SELECT follower, since
 			FROM follows
 			WHERE followed=?
 			ORDER BY follower ASC
 			LIMIT ?
-			`, userhandle, MaxFollowers)
+			`, username, MaxFollowers)
 	} else {
 		res, err = db.c.Query(`
 			SELECT follower, since
@@ -25,7 +25,7 @@ func (db *appdbimpl) GetFollowers(userhandle string, basehandle string) ([]UserA
 			WHERE followed=? and followed > ?
 			ORDER BY follower ASC
 			LIMIT ?
-			`, userhandle, basehandle, MaxFollowers)
+			`, username, basename, MaxFollowers)
 	}
 
 	if err != nil {
@@ -34,8 +34,8 @@ func (db *appdbimpl) GetFollowers(userhandle string, basehandle string) ([]UserA
 
 	i := 0
 	for res.Next() {
-		err = res.Scan(&(ids[i].Handle), &(ids[i].RelevantDate)) // Since I can't do ids[i++]...
-		i++                                                      // This warning is outrageous, i++ is ugly by itself!
+		err = res.Scan(&(ids[i].Name), &(ids[i].RelevantDate)) // Since I can't do ids[i++]...
+		i++                                                    // This warning is outrageous, i++ is ugly by itself!
 		if err != nil {
 			return nil, err
 		}

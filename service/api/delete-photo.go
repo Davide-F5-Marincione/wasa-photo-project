@@ -27,7 +27,7 @@ func (rt *_router) deletePhoto(w http.ResponseWriter, r *http.Request, ps httpro
 	}
 
 	// Only the author can delete, are we the author?
-	if photodetails.Author != actx.ReqUserHandle {
+	if photodetails.Author != actx.ReqUserName {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}

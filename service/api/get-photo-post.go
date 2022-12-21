@@ -37,7 +37,7 @@ func (rt *_router) getPhotoPost(w http.ResponseWriter, r *http.Request, ps httpr
 	}
 
 	// We may be banned from seeing this!
-	if rt.db.CheckBan(photodetails.Author, actx.ReqUserHandle) {
+	if rt.db.CheckBan(photodetails.Author, actx.ReqUserName) {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}

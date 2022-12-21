@@ -11,18 +11,18 @@ import (
 
 // TODO: IMPLEMENT THIS STUFF
 func (rt *_router) getMyStream(w http.ResponseWriter, r *http.Request, ps httprouter.Params, actx reqcontext.AuthRequestContext) {
-	givenhandle := ps.ByName("user-handle")
+	givenname := ps.ByName("user-name")
 
-	resuser, err := rt.db.GetUserDetails(givenhandle)
+	resuser, err := rt.db.GetUserDetails(givenname)
 
-	// Probably bad user handle used
+	// Probably bad user name used
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
 	// The given authorization is for another user!
-	if resuser.Handle != actx.ReqUserHandle {
+	if resuser.Name != actx.ReqUserName {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
@@ -40,7 +40,7 @@ func (rt *_router) getMyStream(w http.ResponseWriter, r *http.Request, ps httpro
 
 	var res []int
 
-	res, err = rt.db.GetStream(givenhandle, intlimit)
+	res, err = rt.db.GetStream(givenname, intlimit)
 
 	// Maybe empty result may throw an error here? Will see.
 	if err != nil {

@@ -84,7 +84,7 @@ func (rt *_router) uploadPhoto(w http.ResponseWriter, r *http.Request, ps httpro
 		photobuff = append(photobuff, leftbuff...) // join the buffers
 	}
 
-	id, err := rt.db.InsertPhoto(actx.ReqUserHandle, title, photobuff)
+	id, err := rt.db.InsertPhoto(actx.ReqUserName, title, photobuff)
 
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)

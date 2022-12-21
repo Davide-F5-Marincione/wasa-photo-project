@@ -27,7 +27,7 @@ func (rt *_router) getRawPhoto(w http.ResponseWriter, r *http.Request, ps httpro
 	}
 
 	// We may be banned from seeing this!
-	if rt.db.CheckBan(photodetails.Author, actx.ReqUserHandle) {
+	if rt.db.CheckBan(photodetails.Author, actx.ReqUserName) {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}

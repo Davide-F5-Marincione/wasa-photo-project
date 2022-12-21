@@ -29,7 +29,7 @@ func (rt *_router) uncommentPhoto(w http.ResponseWriter, r *http.Request, ps htt
 
 	// TODO-Philosophical: can we remove a comment when we are banned by the photo author?
 	// We may be banned from the author!
-	if rt.db.CheckBan(photodetails.Author, actx.ReqUserHandle) {
+	if rt.db.CheckBan(photodetails.Author, actx.ReqUserName) {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
@@ -52,7 +52,7 @@ func (rt *_router) uncommentPhoto(w http.ResponseWriter, r *http.Request, ps htt
 	}
 
 	// Are we the author of the comment?
-	if actx.ReqUserHandle != comment.Author {
+	if actx.ReqUserName != comment.Author {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}

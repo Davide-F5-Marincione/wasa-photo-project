@@ -8,45 +8,45 @@ import (
 )
 
 func (rt *_router) followUser(w http.ResponseWriter, r *http.Request, ps httprouter.Params, actx reqcontext.AuthRequestContext) {
-	givenhandle := ps.ByName("user-handle")
+	givenname := ps.ByName("user-name")
 
-	resuser, err := rt.db.GetUserDetails(givenhandle)
+	resuser, err := rt.db.GetUserDetails(givenname)
 
-	// Probably bad user handle used
+	// Probably bad user name used
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
 	// The given authorization is for another user!
-	if resuser.Handle != actx.ReqUserHandle {
+	if resuser.Name != actx.ReqUserName {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
-	otherhandle := ps.ByName("other-handle")
+	othername := ps.ByName("other-name")
 
-	_, err = rt.db.GetUserDetails(otherhandle)
+	_, err = rt.db.GetUserDetails(othername)
 
-	// Probably bad user handle used
+	// Probably bad user name used
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
 	// Check if trying to follow self
-	if otherhandle == actx.ReqUserHandle {
+	if othername == actx.ReqUserName {
 		w.WriteHeader(http.StatusConflict)
 		return
 	}
 
 	// Check if already banned
-	if rt.db.CheckFollow(actx.ReqUserHandle, otherhandle) {
+	if rt.db.CheckFollow(actx.ReqUserName, othername) {
 		w.WriteHeader(http.StatusNoContent)
 		return
 	}
 
-	err = rt.db.InsertFollow(actx.ReqUserHandle, otherhandle)
+	err = rt.db.InsertFollow(actx.ReqUserName, othername)
 
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)

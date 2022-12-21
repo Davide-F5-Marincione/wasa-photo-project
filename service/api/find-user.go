@@ -2,11 +2,12 @@ package api
 
 import (
 	"encoding/json"
-	"github.com/julienschmidt/httprouter"
 	"net/http"
+
+	"github.com/julienschmidt/httprouter"
 )
 
-func (rt *_router) findUserHandle(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+func (rt *_router) findUser(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	username := r.URL.Query().Get("user-name")
 
 	if username == "" {
@@ -15,14 +16,8 @@ func (rt *_router) findUserHandle(w http.ResponseWriter, r *http.Request, ps htt
 	}
 
 	namebase := r.URL.Query().Get("name-base")
-	handlebase := r.URL.Query().Get("handle-base")
 
-	if namebase != "" && handlebase == "" || namebase == "" && handlebase != "" {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-
-	namesandhandles, err := rt.db.FindSimilar(username, handlebase, namebase)
+	names, err := rt.db.FindSimilar(username, namebase)
 
 	// Maybe empty result may throw an error here? Will see.
 	if err != nil {
@@ -32,7 +27,7 @@ func (rt *_router) findUserHandle(w http.ResponseWriter, r *http.Request, ps htt
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	err = json.NewEncoder(w).Encode(namesandhandles)
+	err = json.NewEncoder(w).Encode(names)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		rt.baseLogger.WithError(err).Error("can't encode user profile response")

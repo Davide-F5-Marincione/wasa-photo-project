@@ -5,12 +5,12 @@ import "database/sql"
 // MaxLikers represents the maximum number of likers we return each time
 const MaxLikers int = 64
 
-func (db *appdbimpl) GetPhotoLikes(photoid int, basehandle string) ([]UserAndDatetime, error) {
+func (db *appdbimpl) GetPhotoLikes(photoid int, basename string) ([]UserAndDatetime, error) {
 	var ids []UserAndDatetime = make([]UserAndDatetime, MaxLikers)
 	var res *sql.Rows
 	var err error
 
-	if basehandle == "" {
+	if basename == "" {
 		res, err = db.c.Query(`
 			SELECT liker, since
 			FROM likes
@@ -25,7 +25,7 @@ func (db *appdbimpl) GetPhotoLikes(photoid int, basehandle string) ([]UserAndDat
 			WHERE photoId = ? AND liker > ?
 			ORDER BY liker ASC
 			LIMIT ?
-			`, photoid, basehandle, MaxLikers)
+			`, photoid, basename, MaxLikers)
 	}
 
 	if err != nil {
@@ -34,8 +34,8 @@ func (db *appdbimpl) GetPhotoLikes(photoid int, basehandle string) ([]UserAndDat
 
 	i := 0
 	for res.Next() {
-		err = res.Scan(&(ids[i].Handle), &(ids[i].RelevantDate)) // Since I can't do ids[i++]...
-		i++                                                      // This warning is outrageous, i++ is ugly by itself!
+		err = res.Scan(&(ids[i].Name), &(ids[i].RelevantDate)) // Since I can't do ids[i++]...
+		i++                                                    // This warning is outrageous, i++ is ugly by itself!
 		if err != nil {
 			return nil, err
 		}

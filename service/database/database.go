@@ -39,11 +39,11 @@ import (
 // AppDatabase is the high level interface for the DB
 type AppDatabase interface {
 	InsertUser(details UserDetails) error
-	CheckAuthFree(auth int) bool
-	GetUserDetails(userhandle string) (UserDetails, error)
+	CheckAuth(auth int) string
+	GetUserDetails(username string) (UserDetails, error)
 	GetUserDetailsAuth(auth int) (UserDetails, error)
-	UpdateUsername(handle string, newname string) error
-	FindSimilar(inputname string, basehandle string, basename string) ([]NameAndHandle, error)
+	UpdateUsername(currname string, newname string) error
+	FindSimilar(inputname string, basename string) ([]string, error)
 
 	InsertBan(banisher string, banished string) error
 	CheckBan(banisher string, banished string) bool
@@ -67,13 +67,13 @@ type AppDatabase interface {
 	RemoveComment(photoid int, id int) error
 
 	// Batches gets
-	GetStream(userhandle string, toplimit int) ([]int, error)
-	GetFollowers(userhandle string, basehandle string) ([]UserAndDatetime, error)
-	GetFollowing(userhandle string, basehandle string) ([]UserAndDatetime, error)
-	GetPhotosProfile(userhandle string, toplimit int) ([]int, error)
+	GetStream(username string, toplimit int) ([]int, error)
+	GetFollowers(username string, basename string) ([]UserAndDatetime, error)
+	GetFollowing(username string, basename string) ([]UserAndDatetime, error)
+	GetPhotosProfile(username string, toplimit int) ([]int, error)
 
 	GetPhotoComments(photoid int, commentlimit int) ([]CommentShow, error)
-	GetPhotoLikes(photoid int, basehandle string) ([]UserAndDatetime, error)
+	GetPhotoLikes(photoid int, basename string) ([]UserAndDatetime, error)
 
 	Ping() error
 }
@@ -116,7 +116,6 @@ func New(db *sql.DB) (AppDatabase, error) {
 	/// TABLES
 	err := addTable(db, "users",
 		`CREATE TABLE users (
-			handle TEXT NOT NULL PRIMARY KEY,
 			name TEXT NOT NULL,
 			auth INTEGER NOT NULL UNIQUE,
 			registerDate TEXT DEFAULT CURRENT_TIMESTAMP NOT NULL,
@@ -128,12 +127,14 @@ func New(db *sql.DB) (AppDatabase, error) {
 
 	err = addTable(db, "follows",
 		`CREATE TABLE follows (
-			follower TEXT NOT NULL,
-			followed TEXT NOT NULL,
+			follower TEXT,
+			followed TEXT,
+			follower_auth INTEGER NOT NULL,
+			followed_auth INTEGER NOT NULL,
 			since TEXT DEFAULT CURRENT_TIMESTAMP NOT NULL,
-			FOREIGN KEY(follower) REFERENCES users(handle),
-			FOREIGN KEY(followed) REFERENCES users(handle),
-			PRIMARY KEY (follower, followed)
+			FOREIGN KEY(follower_auth) REFERENCES users(auth),
+			FOREIGN KEY(followed_auth) REFERENCES users(auth),
+			PRIMARY KEY (follower_auth, followed_auth)
 		);`)
 	if err != nil {
 		return nil, err
@@ -141,12 +142,14 @@ func New(db *sql.DB) (AppDatabase, error) {
 
 	err = addTable(db, "bans",
 		`CREATE TABLE bans (
-			banisher TEXT NOT NULL,
-			banished TEXT NOT NULL,
+			banisher TEXT,
+			banished TEXT,
+			banisher_auth INTEGER NOT NULL,
+			banished_auth INTEGER NOT NULL,
 			since TEXT DEFAULT CURRENT_TIMESTAMP NOT NULL,
-			FOREIGN KEY(banisher) REFERENCES users(handle),
-			FOREIGN KEY(banished) REFERENCES users(handle),
-			PRIMARY KEY (banisher, banished)
+			FOREIGN KEY(banisher_auth) REFERENCES users(auth),
+			FOREIGN KEY(banished_auth) REFERENCES users(auth),
+			PRIMARY KEY (banisher_auth, banished_auth)
 		);`)
 	if err != nil {
 		return nil, err
@@ -155,12 +158,13 @@ func New(db *sql.DB) (AppDatabase, error) {
 	err = addTable(db, "photos",
 		`CREATE TABLE photos (
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
-			author TEXT NOT NULL,
+			author TEXT,
+			author_auth INTEGER NOT NULL,
 			title TEXT NOT NULL,
 			uploadDate TEXT DEFAULT CURRENT_TIMESTAMP NOT NULL,
 			file BLOB NOT NULL,
 			commentsCounter INTEGER DEFAULT 1 NOT NULL,
-			FOREIGN KEY(author) REFERENCES users(handle)
+			FOREIGN KEY(author_auth) REFERENCES users(auth)
 		);`)
 	if err != nil {
 		return nil, err
@@ -169,11 +173,12 @@ func New(db *sql.DB) (AppDatabase, error) {
 	err = addTable(db, "likes",
 		`CREATE TABLE likes (
 			photoId INTEGER NOT NULL,
-			liker TEXT NOT NULL,
+			liker TEXT,
+			liker_auth INTEGER NOT NULL,
 			since TEXT DEFAULT CURRENT_TIMESTAMP NOT NULL,
-			FOREIGN KEY(liker) REFERENCES users(handle),
+			FOREIGN KEY(liker_auth) REFERENCES users(auth),
 			FOREIGN KEY(photoId) REFERENCES photos(id),
-			PRIMARY KEY (photoId, liker)
+			PRIMARY KEY (photoId, liker_auth)
 		);`)
 	if err != nil {
 		return nil, err
@@ -183,10 +188,11 @@ func New(db *sql.DB) (AppDatabase, error) {
 		`CREATE TABLE comments (
 			photoId INTEGER NOT NULL,
 			id INTEGER DEFAULT 0 NOT NULL,
-			author TEXT NOT NULL,
+			author TEXT,
+			author_auth INTEGER NOT NULL,
 			content TEXT NOT NULL,
 			since TEXT DEFAULT CURRENT_TIMESTAMP NOT NULL,
-			FOREIGN KEY(author) REFERENCES users(handle),
+			FOREIGN KEY(author_auth) REFERENCES users(auth),
 			FOREIGN KEY(photoId) REFERENCES photos(id),
 			PRIMARY KEY (photoId, id)
 		);`)
@@ -225,16 +231,118 @@ func New(db *sql.DB) (AppDatabase, error) {
 		return nil, err
 	}
 
+	err = addTrigger(db, "followNameAdd", // To delete comments and likes
+		`CREATE TRIGGER followNameAdd
+			AFTER INSERT ON follows
+		BEGIN
+			UPDATE follows
+				SET follower = (SELECT name FROM users WHERE auth = NEW.follower_auth),
+					followed = (SELECT name FROM users WHERE auth = NEW.followed_auth)
+			WHERE ROWID = new.ROWID;
+		END;`)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = addTrigger(db, "banNameAdd", // To delete comments and likes
+		`CREATE TRIGGER banNameAdd
+			AFTER INSERT ON bans
+		BEGIN
+			UPDATE bans
+				SET banisher = (SELECT name FROM users WHERE auth = NEW.banisher_auth),
+				banished = (SELECT name FROM users WHERE auth = NEW.banished_auth)
+			WHERE ROWID = new.ROWID;
+		END;`)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = addTrigger(db, "photoAuthorAdd", // To delete comments and likes
+		`CREATE TRIGGER photoAuthorAdd
+			AFTER INSERT ON photos
+		BEGIN
+			UPDATE photos
+				SET author = (SELECT name FROM users WHERE auth = NEW.author_auth)
+			WHERE ROWID = new.ROWID;
+		END;`)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = addTrigger(db, "likeNameAdd", // To delete comments and likes
+		`CREATE TRIGGER likeNameAdd
+			AFTER INSERT ON likes
+		BEGIN
+			UPDATE likes
+				SET liker = (SELECT name FROM users WHERE auth = NEW.liker_auth)
+			WHERE ROWID = new.ROWID;
+		END;`)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = addTrigger(db, "commentAuthorAdd", // To delete comments and likes
+		`CREATE TRIGGER commentAuthorAdd
+			AFTER INSERT ON comments
+		BEGIN
+			UPDATE comments
+				SET author = (SELECT name FROM users WHERE auth = NEW.author_auth)
+			WHERE ROWID = new.ROWID;
+		END;`)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = addTrigger(db, "nameChangeCascade", // To delete comments and likes
+		`CREATE TRIGGER nameChangeCascade
+			AFTER UPDATE OF name ON users
+		BEGIN
+			UPDATE follows
+				SET follower = NEW.name
+				WHERE follower_auth = NEW.auth;
+			UPDATE follows
+				SET followed = NEW.name
+				WHERE followed_auth = NEW.auth;
+
+			UPDATE bans
+				SET banisher = NEW.name
+				WHERE banisher_auth = NEW.auth;
+			UPDATE bans
+				SET banished = NEW.name
+				WHERE banished_auth = NEW.auth;
+
+			UPDATE photos
+				SET author = NEW.name
+				WHERE author_auth = NEW.auth;
+
+			UPDATE likes
+				SET liker = NEW.name
+				WHERE liker_auth = NEW.auth;
+			
+			UPDATE comments
+				SET author = NEW.name
+				WHERE author_auth = NEW.auth;
+		END;`)
+
+	if err != nil {
+		return nil, err
+	}
+
 	// In case we may want to also delete users, still haven't designed option to do so
 	err = addTrigger(db, "userDelCascade", // First delete comments and likes, then photos, then follows and bans
 		`CREATE TRIGGER userDelCascade
 			BEFORE DELETE ON users
 		BEGIN
-			DELETE FROM comments WHERE author = OLD.handle;
-			DELETE FROM likes WHERE liker = OLD.handle;
-			DELETE FROM photos WHERE author = OLD.handle;
-			DELETE FROM follows WHERE follower = OLD.handle OR followed = OLD.handle;
-			DELETE FROM bans WHERE banisher = OLD.handle OR banished = OLD.handle;
+			DELETE FROM comments WHERE author = OLD.name;
+			DELETE FROM likes WHERE liker = OLD.name;
+			DELETE FROM photos WHERE author = OLD.name;
+			DELETE FROM follows WHERE follower = OLD.name OR followed = OLD.name;
+			DELETE FROM bans WHERE banisher = OLD.name OR banished = OLD.name;
 		END;`)
 
 	if err != nil {
