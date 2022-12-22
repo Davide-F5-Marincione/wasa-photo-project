@@ -18,7 +18,7 @@ type loginResponse struct {
 
 func (rt *_router) doLogin(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) {
 	username := r.URL.Query().Get("user-name")
-	check, err := regexp.Match("^.{4,32}", []byte(username))
+	check, err := regexp.Match("^.{4,32}$", []byte(username))
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		ctx.Logger.WithError(err).Error("can't regexp user-name")

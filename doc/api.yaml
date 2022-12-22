@@ -81,7 +81,7 @@ components:
         The idea being that, since in no case we need to
         produce lists of names in a particular order, we 
         decree they will be handled via lexicographic
-        order for semplicity.
+        order for simplicity.
 
         It is assumed that any request for this kind of
         batches will either:

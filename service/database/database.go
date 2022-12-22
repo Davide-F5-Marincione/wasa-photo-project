@@ -116,7 +116,7 @@ func New(db *sql.DB) (AppDatabase, error) {
 	/// TABLES
 	err := addTable(db, "users",
 		`CREATE TABLE users (
-			name TEXT NOT NULL,
+			name TEXT PRIMARY KEY,
 			auth INTEGER NOT NULL UNIQUE,
 			registerDate TEXT DEFAULT CURRENT_TIMESTAMP NOT NULL,
 			lastLogin TEXT DEFAULT CURRENT_TIMESTAMP NOT NULL
