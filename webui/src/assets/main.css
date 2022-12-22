@@ -1,3 +1,10 @@
+:root {
+	--dk-green: #2A4F41FF;
+	--my-white: #F8FCFCFF;
+	--lt-black: #2b2d31FF;
+	--dk-black: #131416FF;
+}
+
 .bd-placeholder-img {
 	font-size: 1.125rem;
 	text-anchor: middle;
