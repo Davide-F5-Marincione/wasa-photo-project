@@ -20,3 +20,6 @@
 # Go workspace file
 go.work
 mydb.db
+
+./webui/node_modules
+./webui/package-lock.json
