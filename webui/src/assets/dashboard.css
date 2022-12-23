@@ -9,21 +9,36 @@ body {
 	height: 16px;
 }
 
-input {
-	background-color: var(--lt-black);
-	border: 0;
-	border-radius: 2px;
+.center {
+	width: 30%;
+  	margin: 0 auto;
+	padding-top: 10px;
+	justify-content: center;
+	text-align: center;
 }
 
 /*
  * Navbar
  */
 
+.navbar-logo {
+	padding-top: 0.75rem;
+	padding-bottom: 0.75rem;
+	background-color: var(--dk-green);
+	border-radius: 30px;
+	margin: auto;
+	margin-top: 10vw;
+	font-family: "FiraSansCondensed";
+}
+
 .navbar-brand {
 	padding-top: 0.75rem;
 	padding-bottom: 0.75rem;
 	background-color: var(--dk-green);
 	border-radius: 30px;
+	margin-left: .1vw;
+	margin-top: .5vw;
+	width: 160px;
 }
 
 .navbar-search {
@@ -34,4 +49,29 @@ input {
 	width: 50vw;
 	background-color: var(--lt-black);
 	border-radius: 15px;
+	border-width: 0cm;
 }
+
+/*
+ * Login/Register bar
+ */
+
+.login-bar {
+	padding-top: 0.75rem;
+	padding-bottom: 0.75rem;
+	background-color: var(--lt-black);
+	border-radius: 5px;
+	display: inline-block;
+	border-width: 0cm;
+	font-family: "FiraSansCondensed";
+}
+
+/* .navbar-search {
+	padding-top: 0.4rem;
+	padding-bottom: 0.4rem;
+	position: absolute;
+	margin-left: 25vw;
+	width: 50vw;
+	background-color: var(--lt-black);
+	border-radius: 15px;
+} */

@@ -10,6 +10,8 @@ import './assets/main.css'
 
 const app = createApp(App)
 app.config.globalProperties.$axios = axios;
+app.config.globalProperties.$username = {value: ""};
+app.config.globalProperties.$token = {value: 0};
 app.component("ErrorMsg", ErrorMsg);
 app.component("LoadingSpinner", LoadingSpinner);
 app.use(router)
