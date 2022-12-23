@@ -4,8 +4,10 @@ import router from './router'
 import axios from './services/axios.js';
 import ErrorMsg from './components/ErrorMsg.vue'
 import LoadingSpinner from './components/LoadingSpinner.vue'
+import SearchBar from './components/SearchBar.vue'
 
 import './assets/dashboard.css'
+import './assets/searchbar.css'
 import './assets/main.css'
 
 const app = createApp(App)
@@ -14,5 +16,6 @@ app.config.globalProperties.$username = {value: ""};
 app.config.globalProperties.$token = {value: 0};
 app.component("ErrorMsg", ErrorMsg);
 app.component("LoadingSpinner", LoadingSpinner);
+app.component("SearchBar", SearchBar);
 app.use(router)
 app.mount('#app')

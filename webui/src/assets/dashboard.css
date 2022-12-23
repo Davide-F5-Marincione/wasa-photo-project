@@ -41,17 +41,6 @@ body {
 	width: 160px;
 }
 
-.navbar-search {
-	padding-top: 0.4rem;
-	padding-bottom: 0.4rem;
-	position: absolute;
-	margin-left: 25vw;
-	width: 50vw;
-	background-color: var(--lt-black);
-	border-radius: 15px;
-	border-width: 0cm;
-}
-
 /*
  * Login/Register bar
  */
@@ -65,13 +54,3 @@ body {
 	border-width: 0cm;
 	font-family: "FiraSansCondensed";
 }
-
-/* .navbar-search {
-	padding-top: 0.4rem;
-	padding-bottom: 0.4rem;
-	position: absolute;
-	margin-left: 25vw;
-	width: 50vw;
-	background-color: var(--lt-black);
-	border-radius: 15px;
-} */
