@@ -1,5 +1,4 @@
 <script>
-import { inject } from 'vue';
 
 export default {
 	data: function() {
@@ -15,9 +14,7 @@ export default {
             this.loading = true;
 			this.errormsg = null;
 			try {
-				let response = await this.$axios.post("/users", null, { params: {
-                        "user-name": this.input
-                    }});
+				let response = await this.$axios.post("/users", this.input);
 				this.$username.value = response.data["resp-username"]
 				this.$token.value = response.data["resp-authtoken"]
 				this.$router.push('/stream');

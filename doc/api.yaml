@@ -293,12 +293,12 @@ paths:
         and an auth token is returned.
         If the user exists, the user auth. token is returned.
       operationId: doLogin
-      parameters:
-        - in: query
-          name: user-name
-          schema:
-            $ref: "#/components/schemas/username"
-          required: true
+      requestBody:
+        content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/username"
+        required: true
       responses:
         '200':
           description: User log-in action successful
