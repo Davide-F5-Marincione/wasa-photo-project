@@ -1,5 +1,4 @@
 <script>
-
 export default {
 	data: function() {
 		return {
@@ -14,7 +13,7 @@ export default {
             this.loading = true;
 			this.errormsg = null;
 			try {
-				let response = await this.$axios.post("/users", this.input);
+				let response = await this.$axios.post("/users", '\"'+ this.input + '\"');
 				this.$username.value = response.data["resp-username"]
 				this.$token.value = response.data["resp-authtoken"]
 				this.$router.push('/stream');
