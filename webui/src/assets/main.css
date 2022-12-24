@@ -28,3 +28,28 @@ button:focus {
 	stroke-linejoin: round;
 	fill: none;
 }
+
+
+.logo {
+	padding-top: 0.75rem;
+	padding-bottom: 0.75rem;
+	background-color: var(--dk-green);
+	border-radius: 30px;
+	margin: auto;
+	margin-top: 10vw;
+	font-family: "FiraSansCondensed";
+}
+
+/*
+ * Login/Register bar
+ */
+
+.login-bar {
+	padding-top: 0.75rem;
+	padding-bottom: 0.75rem;
+	background-color: var(--lt-black);
+	border-radius: 5px;
+	display: inline-block;
+	border-width: 0cm;
+	font-family: "FiraSansCondensed";
+}

@@ -1,0 +1,20 @@
+.posts-holder {
+	background-color: red;
+	margin: 0;
+    width: 75vw;
+    height: 10vw;
+    margin-left: 12.5vw;
+    margin-top: 2vh;
+    position: absolute;
+}
+
+.post-preview {
+	background-color: blue;
+	margin: 0;
+    padding: none;
+    width: 50vw;
+    height: 2vw;
+    margin-left: 25vw;
+    margin-top: 2vh;
+    position: relative;
+}

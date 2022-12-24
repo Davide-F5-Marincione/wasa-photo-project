@@ -2,8 +2,8 @@
 	padding-top: 0.4rem;
 	padding-bottom: 0.4rem;
 	position: relative;
-    margin-top: 0vw;
-	margin-left: 0vw;
+    margin-top: .5vw;
+	margin-left: 25vw;
 	width: 50vw;
 	background-color: var(--lt-black);
 	border-radius: 15px 15px 0px 0px;
@@ -16,7 +16,7 @@
 	border-width: 0cm;
 }
 
-ul.no-bullets {
+ol.no-bullets {
 	list-style-type: none; /* Remove bullets */
 }
 

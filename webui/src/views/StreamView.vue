@@ -1,5 +1,5 @@
 <script>
-import TopBar from '../components/TopBar.vue';
+import PostsHolder from '../components/PostsHolder.vue';
 
 export default {
     data: function () {
@@ -9,13 +9,14 @@ export default {
             some_data: null,
         };
     },
-    components: { TopBar }
+    components: { PostsHolder }
 }
 </script>
 
 <template>
 	<TopBar></TopBar>
 	<div>
+		<PostsHolder></PostsHolder>
 		<ErrorMsg v-if="errormsg" :msg="errormsg"></ErrorMsg>
 	</div>
 </template>

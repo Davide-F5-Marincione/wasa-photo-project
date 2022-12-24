@@ -3,8 +3,6 @@ export default {
 	data: function() {
 		return {
 			errormsg: null,
-			loading: false,
-			some_data: null,
 			searchName: "",
 			baseName: "",
 			result: ""
@@ -12,7 +10,6 @@ export default {
 	},
 	methods: {
 		async userSearch() {
-			this.loading = true;
 			this.errormsg = null;
 			try {
 				let response = await this.$axios.get("/users", { params: {
@@ -25,7 +22,6 @@ export default {
 			} catch (e) {
 				this.errormsg = e.toString();
 			}
-			this.loading = false;
 		},
 
 		resetSearch() {
@@ -92,9 +88,12 @@ export default {
 <template>
     <div class="navbar-search">
         <input class="navbar-search-input text-white col-lg-1 px-4 fs-6" v-on:keyup="resetSearch" v-on:keyup.enter="userSearch" v-model="searchName" type="text" placeholder="Search user">
-        <ul class="dropdown-menu-dark disable-scrollbars navbar-search-results no-bullets" id="candidateUsersDropdown" aria-labelledby="searchDropdown">
-        </ul>
+        <ol class="dropdown-menu-dark disable-scrollbars navbar-search-results no-bullets" id="candidateUsersDropdown" aria-labelledby="searchDropdown">
+        </ol>
     </div>
+	<div>
+		<ErrorMsg v-if="errormsg" :msg="errormsg"></ErrorMsg>
+	</div>
 </template>
 
 <style>

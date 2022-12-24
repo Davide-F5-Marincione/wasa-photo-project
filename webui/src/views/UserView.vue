@@ -1,6 +1,4 @@
 <script>
-import TopBar from '../components/TopBar.vue';
-
 export default {
 	data: function() {
 		return {
@@ -8,8 +6,7 @@ export default {
 			loading: false,
 			some_data: null,
 		}
-	},
-    components: { TopBar }
+	}
 }
 </script>
 
