@@ -14,8 +14,8 @@ export default {
 			this.errormsg = null;
 			try {
 				let response = await this.$axios.post("/users", '\"'+ this.input + '\"');
-				this.$username.value = response.data["resp-username"]
-				this.$token.value = response.data["resp-authtoken"]
+				localStorage.username = response.data["resp-username"];
+				localStorage.token = response.data["resp-authtoken"];
 				this.$router.push('/stream');
 			} catch (e) {
 				this.errormsg = e.toString();
