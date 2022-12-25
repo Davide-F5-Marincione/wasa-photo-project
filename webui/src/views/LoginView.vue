@@ -12,7 +12,7 @@ export default {
 			try {
 				let response = await this.$axios.post("/users", '\"'+ this.input + '\"');
 				localStorage.username = response.data["resp-username"];
-				localStorage.token = response.data["resp-authtoken"];
+				localStorage.token = response.data["resp-authtoken"].toString();
 				this.$router.push('/stream');
 			} catch (e) {
 				this.errormsg = e.toString();

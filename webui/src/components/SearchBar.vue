@@ -34,26 +34,22 @@ export default {
 			var dropdown = document.getElementById("candidateUsersDropdown");
 
 			this.result.forEach(element => {
-				var li = document.createElement("li");
 				var but = document.createElement("button");
 				but.addEventListener('click', () => this.$router.push({name: 'user', params: {username: element}}));
 				var text = document.createTextNode(element);
 				but.classList.add("navbar-search-result")
 				but.appendChild(text);
-				li.appendChild(but);
-				dropdown.appendChild(li);
+				dropdown.appendChild(but);
 			});
 
 			if (this.result.length >= 64) {
-				var li = document.createElement("li");
 				var but = document.createElement("button");
 				but.addEventListener('click', () => this.furtherRequest());
 				but.setAttribute("id", "furtherRequest_button")
 				var text = document.createTextNode("Click here to see more results!");
 				but.classList.add("navbar-search-result-end")
 				but.appendChild(text);
-				li.appendChild(but);
-				dropdown.appendChild(li);
+				dropdown.appendChild(but);
 			}
 		},
 
@@ -88,8 +84,8 @@ export default {
 <template>
     <div class="navbar-search">
         <input class="navbar-search-input text-white col-lg-1 px-4 fs-6" v-on:keyup="resetSearch" v-on:keyup.enter="userSearch" v-model="searchName" type="text" placeholder="Search user">
-        <ol class="dropdown-menu-dark disable-scrollbars navbar-search-results no-bullets" id="candidateUsersDropdown" aria-labelledby="searchDropdown">
-        </ol>
+        <div class="dropdown-menu-dark disable-scrollbars navbar-search-results no-bullets" id="candidateUsersDropdown" aria-labelledby="searchDropdown">
+        </div>
     </div>
 	<div>
 		<ErrorMsg v-if="errormsg" :msg="errormsg"></ErrorMsg>

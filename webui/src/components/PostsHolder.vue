@@ -1,5 +1,5 @@
 <script>
-import PostPreview from '../components/PostPreview.vue';
+import PostCard from './PostCard.vue';
 
 export default {
     data: function () {
@@ -9,15 +9,13 @@ export default {
             some_data: null,
         };
     },
-    components: { PostPreview }
+    components: { PostCard }
 }
 </script>
 
 <template>
-	<div class="posts-holder"></div>
-    <ol class="no-bullets">
-        <il>
-            <PostPreview></PostPreview>
-        </il>
-    </ol>
+    <div class="posts-holder">
+        <PostCard imgId=1 title="GloryHammer!"></PostCard>
+        <PostCard title="Char"></PostCard>
+    </div>
 </template>
