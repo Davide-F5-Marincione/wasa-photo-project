@@ -20,6 +20,7 @@ app.config.globalProperties.$axios = axios;
 
 axios.interceptors.request.use(
     config => {
+        config.transformResponse = [data => data];
         // For whatever reason, (I don't know why and, frankly, I don't want to)
         // axios is unable to keep storing the authorization parameter once I set it.
         // Therefore the solution (except manually setting the parameter at every call) is to
