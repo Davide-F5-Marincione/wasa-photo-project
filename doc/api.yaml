@@ -249,6 +249,9 @@ components:
           $ref: "#/components/schemas/namesxdatebatch"
         photo-date:
           $ref: "#/components/schemas/mydatetime"
+        liked:
+          type: boolean
+          description: True if the user requesting has already liked the photo, false otherwise
   
     profile:
       title: Profile
@@ -261,6 +264,12 @@ components:
           $ref: "#/components/schemas/namesxdatebatch"
         following-running-batch:
           $ref: "#/components/schemas/namesxdatebatch"
+        following:
+          type: boolean
+          description: True if the user requesting is following, false otherwise
+        banning:
+          type: boolean
+          description: True if the user requesting is banning, false otherwise
     
     listofnames:
       title: List of Names

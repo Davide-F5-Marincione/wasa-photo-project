@@ -16,6 +16,7 @@ type photoPostResponse struct {
 	Comments []database.CommentShow     `json:"comments-running-batch"`
 	Likes    []database.UserAndDatetime `json:"likes-running-batch"`
 	Date     string                     `json:"photo-date"`
+	Liked 	 bool						`json:"liked"`
 }
 
 func (rt *_router) getPhotoPost(w http.ResponseWriter, r *http.Request, ps httprouter.Params, actx reqcontext.AuthRequestContext) {
@@ -72,7 +73,7 @@ func (rt *_router) getPhotoPost(w http.ResponseWriter, r *http.Request, ps httpr
 		return
 	}
 
-	res := photoPostResponse{Title: photodetails.Title, Author: photodetails.Author, Date: photodetails.UploadDate, Comments: comments, Likes: likes}
+	res := photoPostResponse{Title: photodetails.Title, Author: photodetails.Author, Date: photodetails.UploadDate, Comments: comments, Likes: likes, Liked: rt.db.CheckLike(actx.ReqUserName, intphotoid)}
 
 	w.Header().Set("Content-Type", "application/json")
 	err = json.NewEncoder(w).Encode(res)

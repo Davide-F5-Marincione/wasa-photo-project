@@ -14,6 +14,8 @@ type userProfileResponse struct {
 	PostIDs        []int                      `json:"photos-running-batch"`
 	FollowersNames []database.UserAndDatetime `json:"followers-running-batch"`
 	FollowingNames []database.UserAndDatetime `json:"following-running-batch"`
+	Following 	   bool 					  `json:"following"`
+	Banning 	   bool 					  `json:"banning"`
 }
 
 func (rt *_router) getUserProfile(w http.ResponseWriter, r *http.Request, ps httprouter.Params, actx reqcontext.AuthRequestContext) {
@@ -84,6 +86,8 @@ func (rt *_router) getUserProfile(w http.ResponseWriter, r *http.Request, ps htt
 	res.PostIDs = photos
 	res.FollowersNames = followers
 	res.FollowingNames = following
+	res.Following = rt.db.CheckFollow(actx.ReqUserName, givenname)
+	res.Banning = rt.db.CheckBan(actx.ReqUserName, givenname)
 
 	w.Header().Set("Content-Type", "application/json")
 	err = json.NewEncoder(w).Encode(res)

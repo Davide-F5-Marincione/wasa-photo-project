@@ -52,3 +52,8 @@ body {
 	height: 8vh;
 	background-color: var(--dk-black);
 }
+
+.logged-text {
+	font-size: 2vh;
+	color: var(--my-white);
+}

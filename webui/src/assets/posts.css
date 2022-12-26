@@ -18,18 +18,88 @@
     border-radius: 10px;
 } 
 
-.post-title {
+.post-titleandinfo {
 	background-color: #00000000;
     width: 60vw;
     height: 10vh;
-    margin: 0vw;
     border-radius: 10px 10px 0px 0px;
-    font-size: 2vw;
     display: flex;
     justify-content: center;
     align-content: center;
-    flex-direction: column;
-} 
+}
+
+.post-title {
+	background-color: #00000000;
+    width: 40vw;
+    height: 10vh;
+    padding-left: 1vw;
+    border-radius: 10px 0px 0px 0px;
+    font-size: 3vh;
+    align-content: center;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.post-info {
+	background-color: var(--lt-black);
+    width: 20vw;
+    height: 10vh;
+    margin: 0vw;
+    border-radius: 10px 10px 0px 0px;
+    font-size: 2vh;
+    border-width: 0px;
+    border-bottom: 2px var(--dk-black);
+    border-style: solid;
+}
+
+.post-author {
+	background-color: #00000000;
+    text-decoration: none;
+    font-size: 3vh;
+    padding-left: .5vw;
+}
+
+.post-dateandlike {
+	background-color: #00000000;
+    width: 20vw;
+    display: flex;
+    align-content: center;
+    flex-wrap: wrap;
+    justify-content:space-between;
+}
+
+.post-date {
+	background-color: #00000000;
+    text-decoration: none;
+    font-size: 2vh;
+    color: grey;
+    padding-left: .5vw;
+}
+
+button.post-like-button {
+	background-color: var(--dk-green);
+    padding: .2vw;
+    font-size: 1.6vh;
+    color: white;
+    margin-right: .5vw;
+    border-width: 0vw;
+    border-radius: 10px;
+    height: 5vh;
+    width: 3vw;
+}
+
+button.post-unlike-button {
+	background-color: var(--dk-black);
+    padding: .2vw;
+    font-size: 1.6vh;
+    color: var(--my-white);
+    margin-right: .5vw;
+    border-width: 0vw;
+    border-color: var(--dk-black);
+    border-radius: 10px;
+    height: 5vh;
+    width: 3vw;
+}
 
 .post-photoandcomments {
 	background-color: #00000000;
@@ -47,7 +117,7 @@
     width: 40vw;
     height: 60vh;
     margin: 0vw;
-    border-radius: 0px 0px 0px 10px;
+    border-radius: 0px 0px 0px 0px;
     position: relative;
 } 
 
@@ -63,7 +133,7 @@
 	background-color: var(--lt-black);
     width: 20vw;
     height: 60vh;
-    border-radius: 0px 10px 10px 0px;
+    border-radius: 0px 0px 10px 0px;
     margin: 0vw;
     position: relative;
 } 

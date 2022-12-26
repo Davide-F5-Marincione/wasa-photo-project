@@ -15,7 +15,7 @@ export default {
 
 <template>
     <div class="posts-holder">
-        <PostCard imgId=1 title="GloryHammer!"></PostCard>
-        <PostCard title="Char"></PostCard>
+        <PostCard imgId=1></PostCard>
+        <PostCard></PostCard>
     </div>
 </template>

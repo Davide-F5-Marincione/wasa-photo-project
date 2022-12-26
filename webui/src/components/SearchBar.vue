@@ -83,7 +83,7 @@ export default {
 
 <template>
     <div class="navbar-search">
-        <input class="navbar-search-input text-white col-lg-1 px-4 fs-6" v-on:keyup="resetSearch" v-on:keyup.enter="userSearch" v-model="searchName" type="text" placeholder="Search user">
+        <input class="navbar-search-input" v-on:keyup="resetSearch" v-on:keyup.enter="userSearch" v-model="searchName" type="text" placeholder="Search user">
         <div class="dropdown-menu-dark disable-scrollbars navbar-search-results no-bullets" id="candidateUsersDropdown" aria-labelledby="searchDropdown">
         </div>
     </div>

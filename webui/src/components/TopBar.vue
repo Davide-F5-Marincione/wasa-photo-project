@@ -30,7 +30,7 @@ export default {
             <a>Goto stream</a>
         </button>
 		<SearchBar></SearchBar>
-		<div class="text-white fs-6">Logged as: <b>{{username}}</b></div>
+		<div class="logged-text">Logged as: <b>{{username}}</b></div>
 	</header>
 </template>
 
