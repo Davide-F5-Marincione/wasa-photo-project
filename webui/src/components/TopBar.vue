@@ -8,13 +8,6 @@ export default {
 			token: 0
 		}
 	},
-
-    methods: {
-        toStream() {
-            this.$router.push({ name: "stream"})
-        }
-    },
-
 	mounted() {
 		this.username = localStorage.username;
 		this.token = localStorage.token;
@@ -25,10 +18,8 @@ export default {
 
 <template>
 	<header class="navbar navbar-dark sticky-top my-bg-dark">
-		<a class="navbar-brand" href="#/">WASAPhoto</a>
-        <button class="navbar-goto-stream" @click="toStream()">
-            <a>Goto stream</a>
-        </button>
+		<router-link class="navbar-brand" to="/">WASAPhoto</router-link>
+        <router-link class="navbar-goto-stream" to="/stream">Goto stream</router-link>
 		<SearchBar></SearchBar>
 		<div class="logged-text">Logged as: <b>{{username}}</b></div>
 	</header>

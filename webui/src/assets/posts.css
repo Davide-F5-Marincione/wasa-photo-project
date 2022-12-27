@@ -69,6 +69,7 @@
     text-decoration: underline;
     font-size: 2vh;
     padding-right: .2vw;
+    color: var(--my-white);
 }
 
 .post-date {
@@ -129,6 +130,18 @@
     border: .15vw;
     border-color: var(--my-white);
     border-style: solid;
+    font-size: 1.5vh;
+}
+
+.like-element-end {
+	background-color: var(--dk-green);
+    border-radius: 5px;
+    color: var(--my-white);
+    margin: .1vw;
+    position: relative;
+    text-decoration: none;
+    font-size: 1.5vh;
+    border-width: 0vw;
 }
 
 button.post-like-button {

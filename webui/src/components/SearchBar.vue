@@ -5,7 +5,7 @@ export default {
 			errormsg: null,
 			searchName: "",
 			baseName: "",
-			result: ""
+			results: []
 		}
 	},
 	methods: {
@@ -13,12 +13,10 @@ export default {
 			this.errormsg = null;
 			try {
 				let response = await this.$axios.get("/users", { params: {
-                        "user-name": this.searchName
+                        "user-name": this.searchName, "name-base": this.baseName
                     }});
 				this.baseName = response.data[response.data.length - 1];
-				this.result = response.data;
-				this.emptyDropdown();
-				this.populateDropdown();
+				this.results.push(...response.data);
 			} catch (e) {
 				this.errormsg = e.toString();
 			}
@@ -26,56 +24,7 @@ export default {
 
 		resetSearch() {
 			this.baseName = "";
-			this.result = "";
-			this.emptyDropdown();
-		},
-
-		populateDropdown() {
-			var dropdown = document.getElementById("candidateUsersDropdown");
-
-			this.result.forEach(element => {
-				var but = document.createElement("button");
-				but.addEventListener('click', () => this.$router.push({name: 'user', params: {username: element}}));
-				var text = document.createTextNode(element);
-				but.classList.add("navbar-search-result")
-				but.appendChild(text);
-				dropdown.appendChild(but);
-			});
-
-			if (this.result.length >= 64) {
-				var but = document.createElement("button");
-				but.addEventListener('click', () => this.furtherRequest());
-				but.setAttribute("id", "furtherRequest_button")
-				var text = document.createTextNode("Click here to see more results!");
-				but.classList.add("navbar-search-result-end")
-				but.appendChild(text);
-				dropdown.appendChild(but);
-			}
-		},
-
-		async furtherRequest() {
-			this.loading = true;
-			this.errormsg = null;
-			try {
-				let response = await this.$axios.get("/users", { params: {
-                        "user-name": this.searchName, "name-base": this.baseName
-                    }});
-				this.baseName = response.data[response.data.length - 1];
-				this.result = response.data;
-				document.getElementById("furtherRequest_button").remove();
-				this.populateDropdown();
-			} catch (e) {
-				this.errormsg = e.toString();
-				this.emptyDropdown();
-			}
-			this.loading = false;
-		},
-
-		emptyDropdown() {
-			var dropdown = document.getElementById("candidateUsersDropdown");
-			while (dropdown.firstChild) {
-				dropdown.removeChild(dropdown.lastChild);
-			}
+			this.results = [];
 		}
 	}
 }
@@ -84,7 +33,11 @@ export default {
 <template>
     <div class="navbar-search">
         <input class="navbar-search-input" v-on:keyup="resetSearch" v-on:keyup.enter="userSearch" v-model="searchName" type="text" placeholder="Search user">
-        <div class="dropdown-menu-dark disable-scrollbars navbar-search-results no-bullets" id="candidateUsersDropdown" aria-labelledby="searchDropdown">
+        <div class="dropdown-menu-dark disable-scrollbars" id="candidateUsersDropdown">
+			<div v-for="element in results" class="navbar-search-result">
+				<router-link class="navbar-search-result-text" :to="'/users/' + element"> {{ element }}</router-link>
+			</div>
+			<button v-if="results.length > 0" class="navbar-search-result-end" :onclick="() => this.furtherRequest()">Click here to see more results!</button>
         </div>
     </div>
 	<div>

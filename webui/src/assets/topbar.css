@@ -45,6 +45,10 @@ body {
 	text-align: center;
 	position: absolute;
 	color: var(--my-white);
+	border-color: var(--my-white);
+	border-width: .2vw;
+	border-style: outset;
+	text-decoration: none;
 }
 
 .my-bg-dark {
