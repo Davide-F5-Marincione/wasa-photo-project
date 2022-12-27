@@ -13,12 +13,6 @@ button:focus {
     outline: none;
 }
 
-@font-face {
-	font-family: "FiraSansCondensed";
-	src: local("FiraSansCondensed"), url(./assets/Fira_Sans_Condensed/FiraSansCondensed-Regular.ttf) format("truetype");
-}
-
-
 .feather {
 /*	width: 24px;
 	height: 24px;*/
@@ -37,7 +31,6 @@ button:focus {
 	border-radius: 30px;
 	margin: auto;
 	margin-top: 10vw;
-	font-family: "FiraSansCondensed";
 }
 
 /*
@@ -51,5 +44,4 @@ button:focus {
 	border-radius: 5px;
 	display: inline-block;
 	border-width: 0cm;
-	font-family: "FiraSansCondensed";
 }

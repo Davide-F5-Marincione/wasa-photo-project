@@ -9,13 +9,17 @@ export default {
 			author:"The browser itself",
 			date: new Date().toLocaleString( 'sv', { timeZoneName: 'short' } ).split(" ").slice(0,2).join(" "),
 			liked: false,
+			likersResult: [],
+			commentsResults: [],
+			likesBase: "",
+			commentsLimit: ""
         };
     },
     methods: {
-		async refreshData() {
+		async refreshData(new_likes=false, new_comments=false) {
 			this.errormsg = null;
 			try {
-				var response = await this.$axios.get("/photos/" + this.imgId.toString());
+				var response = await this.$axios.get("/photos/" + this.imgId.toString(), {params: {"likes-base": this.likesBase, "comments-limit":this.commentsLimit}});
 				this.title = response.data["photo-title"]
 				this.author = response.data["photo-author"]
 				var auLink = document.getElementById("author-link")
@@ -34,6 +38,16 @@ export default {
 					but.classList.add("post-like-button")
 					but.onclick = () => this.likeThis().then()
 				}
+				
+				if (new_likes) {
+					this.likersResult.push(...response.data["likes-running-batch"])
+					this.likesBase = response.data["likes-running-batch"][response.data["likes-running-batch"].length - 1]["name"];
+				}
+				if (new_comments) {
+					this.commentsResults.push(...response.data["comments-running-batch"])
+					this.commentsLimit = response.data["comments-running-batch"][response.data["comments-running-batch"].length - 1]["comment-id"];
+				}
+
 			} catch (e) {
 				this.errormsg = e.toString();
 			}
@@ -72,7 +86,7 @@ export default {
     },
 	created() {
 		if (this.imgId) {
-			this.refreshData();
+			this.refreshData(true, true);
 		}
 	},
     components: { ImageContainer }
@@ -82,30 +96,58 @@ export default {
 
 <template>
 	<div class="post-card">
-		<div class="post-titleandinfo">
-			<div class="post-title">
-				{{ title }}
-			</div>
-			<div class="post-info">
-				<div id="author-link" class="post-author" style="cursor: pointer;">
-					{{ author }}
+		<div class="post-titleinfoandphoto">
+			<div class="post-titleandinfo">
+				<div class="post-title">
+					{{ title }}
 				</div>
-				<div class="post-dateandlike">
-					<div class="post-date">
-						{{ date }}
+				<div class="post-info">
+					<div>					
+						<div id="author-link" class="post-author" style="cursor: pointer;" align="right">
+							{{ author }}
+						</div>
+						<div class="post-date" align="right">
+							{{ date }}
+						</div>
 					</div>
-					<button id="button-like" class="post-like-button" liked="">
-						Ahem...
-					</button>
 				</div>
 			</div>
-		</div>
-		<div class="post-photoandcomments">
 			<ImageContainer :alt="title" :img-id="imgId"></ImageContainer>
-			<div class="post-comments">
-				{{ resp }}
+		</div>
+		<div class="post-commentsandlikes">
+			<div id="likesholder" class="post-likesholder">
+				<router-link class="like-element" v-for="element in likersResult" :to="'/users/' +element['name']">{{ element['name'] }}</router-link>
 			</div>
+			<button id="button-like" class="post-like-button">
+				like
+			</button> 
+			<div class="post-comments">
+			</div>
+			<textarea class="post-comment-writer" maxlength="256"></textarea>
+			<button id="button-comment" class="post-comment-button">
+				Comment!
+			</button> 
 			<ErrorMsg v-if="errormsg" :msg="errormsg"></ErrorMsg>
 		</div>
 	</div>
 </template>
+
+<!-- this.likersResult.forEach(element => {
+	var liker = element["name"]
+	var but = document.createElement("button");
+	but.addEventListener('click', () => this.$router.push({name: 'user', params: {username: liker}}));
+	var text = document.createTextNode(liker);
+	but.classList.add("like-element")
+	but.appendChild(text);
+	holder.appendChild(but);
+});
+
+if (this.likersResult.length >= 64) {
+	var but = document.createElement("button");
+	but.addEventListener('click', () => this.refreshData(new_likes=true));
+	but.setAttribute("id", "furtherLikes_button")
+	var text = document.createTextNode("More likers!");
+	but.classList.add("like-element-end")
+	but.appendChild(text);
+	holder.appendChild(but);
+} -->

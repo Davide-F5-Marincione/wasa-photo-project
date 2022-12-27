@@ -8,6 +8,7 @@ import axios from './services/axios.js';
 import ErrorMsg from './components/ErrorMsg.vue'
 import LoadingSpinner from './components/LoadingSpinner.vue'
 import TopBar from './components/TopBar.vue'
+import PostCard from './components/PostCard.vue'
 
 
 import './assets/topbar.css'
@@ -58,5 +59,6 @@ app.component("ErrorMsg", ErrorMsg);
 app.component("LoadingSpinner", LoadingSpinner);
 app.component("TopBar", TopBar);
 app.component("Buffer", Buffer);
+app.component("PostCard", PostCard);
 app.use(router)
 app.mount('#app')
