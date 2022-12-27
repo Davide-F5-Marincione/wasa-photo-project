@@ -1,7 +1,7 @@
 <script>
 import ImageContainer from "./ImageContainer.vue";
 export default {
-    props: ["imgId"],
+    props: ["imgId", "del"],
     data: function () {
         return {
             errormsg: null,
@@ -13,7 +13,8 @@ export default {
 			commentsResults: [],
 			likesBase: "",
 			commentsLimit: "",
-			username: localStorage.username
+			username: localStorage.username,
+			commentWrite: ""
         };
     },
     methods: {
@@ -76,8 +77,38 @@ export default {
 			this.refreshData();
 		},
 		convDate(date) {
-			return date //TODO: convert to local timezone
+			return (new Date(date.split(" ").join("T") + "Z")).toLocaleString( 'sv', { timeZoneName: 'short' } ).split(" ").slice(0,2).join(" ") //TODO: convert to local timezone
 		},
+		async sendComment() {
+			if (!this.imgId) {
+				return
+			}
+			var textarea = document.getElementById("comment-text");
+			try {
+				await this.$axios.post("/photos/" + this.imgId.toString() + "/comments",  textarea.value, {headers: {'Content-Type': 'application/json'}});
+				textarea.value = ""
+				this.commentsResults = []
+				this.commentsLimit = ""
+				this.refreshData(false, true)
+			} catch (e) {
+				this.errormsg = e.toString();
+			}
+		},
+
+		async deleteComment(id) {
+			if (!this.imgId) {
+				return
+			}
+
+			try {
+				await this.$axios.delete("/photos/" + this.imgId.toString() + "/comments/" + id.toString());
+				this.commentsResults = []
+				this.commentsLimit = ""
+				this.refreshData(false, true)
+			} catch (e) {
+				this.errormsg = e.toString();
+			}
+		}
     },
 	created() {
 		if (this.imgId) {
@@ -102,6 +133,7 @@ export default {
 						<div class="post-date" align="right">
 							{{ date }}
 						</div>
+						<button v-if="author == username" class="delete-post" align="right" :onclick="() => del()">delete this post</button>
 					</div>
 				</div>
 			</div>
@@ -109,18 +141,27 @@ export default {
 		</div>
 		<div class="post-commentsandlikes">
 			<div id="likesholder" class="post-likesholder">
-				<router-link class="like-element" v-for="element in likersResult" :to="'/users/' +element['name']">{{ element['name'] }}</router-link>
+				<router-link class="like-element" v-for="element in likersResult"  v-bind="element.name" :to="'/users/' +element.name">{{ element.name }}</router-link>
 				<router-link v-if="liked" class="like-element" :to="'/users/' + username">{{ username }}</router-link>
-				<button class="like-element-end" :onclick="() => this.refreshData(new_likes=true)">More likers!</button>
+				<button class="like-element-end" :onclick="() => this.refreshData(true, false)">More likes!</button>
 			</div>
 			<button v-if="!liked" class="post-like-button" :onclick="() => this.likeThis().then()">like</button>
 			<button v-if="liked" class="post-unlike-button" :onclick="() => this.unlikeThis().then()">unlike</button>
-			<div class="post-comments">
+			<div class="post-comments disable-scrollbars">
+				<div v-for="element in commentsResults" v-bind="element['comment-id']" class="post-comment">
+					<div class="comment-authoranddeleter">
+						<router-link class="comment-author" :to="'/users/' + element['comment-author']"> {{ element["comment-author"] }}: </router-link>
+						<button v-if="element['comment-author']==username" class="comment-deleter" :onclick="() => this.deleteComment(element['comment-id'])">✕</button>
+					</div>
+					<div class="comment-content">{{ element["comment-text"] }}</div>
+					<div class="comment-date">{{ convDate(element["comment-date"]) }}</div>
+				</div>
+				<button class="post-comments-end" :onclick="() => this.refreshData(false, true)">See more comments!</button>
 			</div>
-			<textarea class="post-comment-writer" maxlength="256"></textarea>
-			<button id="button-comment" class="post-comment-button">
+			<textarea id="comment-text" class="post-comment-writer" maxlength="256"></textarea>
+			<button class="post-comment-button" :onclick="() => this.sendComment()">
 				Comment!
-			</button> 
+			</button>
 			<ErrorMsg v-if="errormsg" :msg="errormsg"></ErrorMsg>
 		</div>
 	</div>

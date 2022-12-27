@@ -16,7 +16,7 @@ type photoPostResponse struct {
 	Comments []database.CommentShow     `json:"comments-running-batch"`
 	Likes    []database.UserAndDatetime `json:"likes-running-batch"`
 	Date     string                     `json:"photo-date"`
-	Liked 	 bool						`json:"liked"`
+	Liked    bool                       `json:"liked"`
 }
 
 func (rt *_router) getPhotoPost(w http.ResponseWriter, r *http.Request, ps httprouter.Params, actx reqcontext.AuthRequestContext) {

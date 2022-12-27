@@ -6,6 +6,30 @@
     flex-wrap: wrap;
 }
 
+.posts-more {
+    background-color: var(--dk-green);
+    width: 40vw;
+    height: 5vh;
+    margin-left: 17.5vw;
+    margin-bottom: 2vh;
+    border-radius: 10px;
+    border-width: 0px;
+    font-size: 2vh;
+    color: var(--my-white);
+}
+
+.delete-post {
+    background-color: #00000000;
+    width: 5vw;
+    margin: 0vw;
+    margin-left: 3vw;
+    border-width: 0px;
+    padding: 0vw;
+    font-size: 1vh;
+    text-align: right;
+    color: #851313FF;
+}
+
 .post-card {
 	background-color: #00000000;
     width: 60vw;
@@ -152,6 +176,8 @@ button.post-like-button {
     border-width: 0vw;
     height: 5vh;
     width: 20vw;
+    position: absolute;
+    margin-top: 10vh;
 }
 
 button.post-unlike-button {
@@ -163,15 +189,72 @@ button.post-unlike-button {
     border-color: var(--dk-black);
     height: 5vh;
     width: 20vw;
+    position: absolute;
+    margin-top: 10vh;
 }
 
 .post-comments {
 	background-color: var(--lt-black);
     width: 20vw;
     height: 43vh;
-    border-radius: 0px 0px 0px 0px;
     margin: 0vw;
+    margin-top: 15vh;
+    overflow-y: scroll;
+	position: absolute;
+    float: none;
+}
+
+.post-comment {
+	background-color: var(--dk-black);
+    width: 18vw;
+    border-radius: 5px;
+    margin: 1vw;
+    margin-bottom: 0vw;
     position: relative;
+}
+
+.comment-authoranddeleter {
+    display: flex;
+    justify-content: space-between;
+}
+
+.comment-author {
+	color: var(--my-white);
+    font-size: 1.5vh;
+    padding-left: .1vw;
+}
+
+.comment-deleter {
+	color: grey;
+    background-color: #00000000;
+    border-width: 0vw;
+    font-size: 1.5vh;
+}
+
+.comment-content {
+	color: var(--my-white);
+    font-size: 1.5vh;
+    padding-left: .1vw;
+    text-indent: .2vw;
+}
+
+.comment-date {
+	color: grey;
+    font-size: 1.5vh;
+    padding-right: .1vw;
+    text-align: right;
+}
+
+.post-comments-end {
+	background-color: var(--dk-green);
+    border-radius: 5px;
+    color: var(--my-white);
+    margin: 1vw;
+    width: 18vw;
+    position: relative;
+    text-decoration: none;
+    font-size: 1.5vh;
+    border-width: 0vw;
 }
 
 textarea.post-comment-writer {
@@ -184,13 +267,15 @@ textarea.post-comment-writer {
     border-radius: 10px 10px 0px 0px;
     border-width: 0px;
     margin: 0vw;
+    margin-top: 58vh;
     font-size: 1.5vh;
-    position: relative;
+    position: absolute;
     resize: none;
 }
 
 button.post-comment-button {
 	background-color: var(--dk-green);
+    position:absolute;
     padding: .2vw;
     font-size: 1.6vh;
     color: white;
@@ -198,4 +283,5 @@ button.post-comment-button {
     border-radius: 0px 0px 10px 0px;
     height: 4vh;
     width: 20vw;
+    margin-top: 66vh;
 }
