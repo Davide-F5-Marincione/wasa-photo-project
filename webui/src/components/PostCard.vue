@@ -141,17 +141,17 @@ export default {
 		</div>
 		<div class="post-commentsandlikes">
 			<div id="likesholder" class="post-likesholder">
-				<router-link class="like-element" v-for="element in likersResult"  v-bind="element.name" :to="'/users/' +element.name">{{ element.name }}</router-link>
+				<router-link class="like-element" v-for="element in likersResult"  v-bind:to="'/users/' +element.name">{{ element.name }}</router-link>
 				<router-link v-if="liked" class="like-element" :to="'/users/' + username">{{ username }}</router-link>
 				<button class="like-element-end" :onclick="() => this.refreshData(true, false)">More likes!</button>
 			</div>
 			<button v-if="!liked" class="post-like-button" :onclick="() => this.likeThis().then()">like</button>
 			<button v-if="liked" class="post-unlike-button" :onclick="() => this.unlikeThis().then()">unlike</button>
 			<div class="post-comments disable-scrollbars">
-				<div v-for="element in commentsResults" v-bind="element['comment-id']" class="post-comment">
+				<div v-for="element in commentsResults" class="post-comment">
 					<div class="comment-authoranddeleter">
-						<router-link class="comment-author" :to="'/users/' + element['comment-author']"> {{ element["comment-author"] }}: </router-link>
-						<button v-if="element['comment-author']==username" class="comment-deleter" :onclick="() => this.deleteComment(element['comment-id'])">✕</button>
+						<router-link class="comment-author" v-bind:to="'/users/' + element['comment-author']"> {{ element["comment-author"] }}: </router-link>
+						<button v-if="element['comment-author']==username" class="comment-deleter" v-bind:onclick="() => this.deleteComment(element['comment-id'])">✕</button>
 					</div>
 					<div class="comment-content">{{ element["comment-text"] }}</div>
 					<div class="comment-date">{{ convDate(element["comment-date"]) }}</div>

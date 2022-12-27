@@ -10,7 +10,7 @@ export default {
 		async login() {
 			this.errormsg = null;
 			try {
-				let response = await this.$axios.post("/users", '\"'+ this.input + '\"');
+				let response = await this.$axios.post("/users", this.input, {headers: {"Content-Type": "application/json"}});
 				localStorage.username = response.data["resp-username"];
 				localStorage.token = response.data["resp-authtoken"].toString();
 				this.$router.push('/stream');

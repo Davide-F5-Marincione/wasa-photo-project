@@ -23,6 +23,7 @@ export default {
 
 			} catch (e) {
 				this.errormsg = e.toString();
+
 			}
 		},
         async delPost(id) {
@@ -47,7 +48,7 @@ export default {
 	<TopBar></TopBar>
 	<div>
 		<div class="posts-holder">
-            <PostCard v-for="elem in results" v-bind="elem" :imgId="elem" :del="()=>delPost(elem)"></PostCard>
+            <PostCard v-for="elem in results" v-bind:imgId="elem" v-bind:del="()=>delPost(elem)"></PostCard>
             <button class="posts-more" :onclick="() => refreshData()">Show more posts!</button>
         </div>
 		<ErrorMsg v-if="errormsg" :msg="errormsg"></ErrorMsg>
