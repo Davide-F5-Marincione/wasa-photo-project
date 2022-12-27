@@ -34,7 +34,7 @@ export default {
 
 <template>
     <div class="navbar-search">
-        <input class="navbar-search-input" v-on:keyup="resetSearch" v-on:keyup.enter="userSearch" v-model="searchName" type="text" placeholder="Search user">
+        <input class="navbar-search-input" v-on:keyup="resetSearch" v-on:keyup.enter="userSearch" v-model="searchName" type="text" placeholder="Search user" maxlength="32">
         <div class="dropdown-menu-dark disable-scrollbars" id="candidateUsersDropdown">
 			<div v-for="element in results"  class="navbar-search-result">
 				<router-link class="navbar-search-result-text" v-bind:to="'/users/' + element"> {{ element }}</router-link>
@@ -46,6 +46,3 @@ export default {
 		<ErrorMsg v-if="errormsg" :msg="errormsg"></ErrorMsg>
 	</div>
 </template>
-
-<style>
-</style>

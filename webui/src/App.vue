@@ -9,7 +9,10 @@ export default {}
 	<div class="container-fluid">
 		<div class="row">
 			<main class="">
-				<RouterView/>
+				<!-- The matter that when pushing to the same route but with different parameters
+					is a behaviour not supported by default (and therefore one has to add this
+					sort of hacky-stuff) is bullshit. -->
+				<RouterView :key="$route.fullPath"/>
 			</main>
 		</div>
 	</div>

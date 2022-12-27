@@ -69,13 +69,18 @@ body {
 	text-decoration: none;
 }
 
-.my-bg-dark {
+.my-topbar {
+	position: -webkit-sticky;
+    position: fixed;
 	width: 100%;
 	height: 8vh;
+	top: 0;
 	background-color: var(--dk-black);
+	z-index: 10;
 }
 
 .logged-text {
 	font-size: 2vh;
 	color: var(--my-white);
+	margin-right: 2vw;
 }

@@ -2,8 +2,10 @@
 	background-color: #00000000;
     width: 75vw;
     height: auto;
+    top: 8vh;
     margin-left: 12.5vw;
     flex-wrap: wrap;
+    position: absolute;
 }
 
 .posts-more {
@@ -92,6 +94,8 @@
 	background-color: #00000000;
     text-decoration: underline;
     font-size: 2vh;
+    display: flex;
+    justify-content: right;
     padding-right: .2vw;
     color: var(--my-white);
 }

@@ -1,0 +1,100 @@
+.deck {
+    position: -webkit-sticky;
+    position: fixed;
+    background-color: var(--lt-black);
+    width: 18vw;
+    border-radius: 10px;
+    top: 8vh;
+    font-size: 1.5vh;
+}
+
+.buttons {
+    height: 5vh;
+    display: flex;
+    justify-content: space-between;
+}
+
+button.follow-button {
+	background-color: var(--dk-green);
+    margin: .2vw;
+    font-size: 1.6vh;
+    color: white;
+    border-width: 0vw;
+    width: 8vw;
+    border-radius: 5px;
+}
+
+button.unfollow-button {
+	background-color: var(--dk-black);
+    margin: .2vw;
+    font-size: 1.6vh;
+    color: var(--my-white);
+    border-width: 0vw;
+    border-color: var(--dk-black);
+    width: 8vw;
+    border-radius: 5px;
+}
+
+button.ban-button {
+	background-color: brown;
+    margin: .2vw;
+    font-size: 1.6vh;
+    color: white;
+    border-width: 0vw;
+    width: 8vw;
+    border-radius: 5px;
+}
+
+button.unban-button {
+	background-color: var(--dk-black);
+    margin: .2vw;
+    font-size: 1.6vh;
+    color: var(--my-white);
+    border-width: 0vw;
+    border-color: var(--dk-black);
+    width: 8vw;
+    border-radius: 5px;
+}
+
+.follow-container {
+	background-color: #00000000;
+    width: 18vw;
+    height: 10vh;
+    margin: 0vw;
+    position: relative;
+}
+
+.follow-element {
+	background-color: var(--lt-black);
+    border-radius: 5px;
+    color: var(--my-white);
+    margin: .1vw;
+    position: relative;
+    text-decoration: none;
+    border: .15vw;
+    border-color: var(--my-white);
+    border-style: solid;
+    font-size: 1.5vh;
+}
+
+.follow-element-end {
+	background-color: var(--dk-green);
+    border-radius: 5px;
+    color: var(--my-white);
+    margin: .1vw;
+    position: relative;
+    text-decoration: none;
+    font-size: 1.5vh;
+    border-width: 0vw;
+}
+
+.new-username {
+    width: 16vw;
+    margin-left: 1vw;
+    margin-bottom: .5vh;
+	background-color: var(--dk-black);
+	border-width: 0cm;
+    border-radius: 4px;
+	color: var(--my-white);
+	font-size: 1.5vh;
+}

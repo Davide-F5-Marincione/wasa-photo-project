@@ -11,7 +11,8 @@ const router = createRouter({
 		{name: 'stream', path: '/stream', component: StreamView},
 		{name: 'upload', path: '/upload', component: UploadPhoto},
 		{name: 'user', path: '/users/:username', component: UserView},
-	]
+	],
+	linkExactActiveClass: "active"
 })
 
 export default router

@@ -264,12 +264,6 @@ components:
           $ref: "#/components/schemas/namesxdatebatch"
         following-running-batch:
           $ref: "#/components/schemas/namesxdatebatch"
-        following:
-          type: boolean
-          description: True if the user requesting is following, false otherwise
-        banning:
-          type: boolean
-          description: True if the user requesting is banning, false otherwise
     
     listofnames:
       title: List of Names
@@ -291,6 +285,12 @@ components:
           $ref: "#/components/schemas/username"
         resp-authtoken:
           $ref: "#/components/schemas/authtoken"
+
+    check:
+      title: Generic check
+      description: A boolean used to indicate a generic yes/no answer to a check
+      example: false
+      type: boolean
   
 paths:
   /users:
@@ -473,6 +473,27 @@ paths:
           description: Other or This user not found
         '500':
           $ref: '#/components/responses/InternalServerError'
+    get:
+      security:
+      - bearerAuth: []
+      tags: ["user"]
+      summary: Check follow user
+      description: |-
+        Returns whether a follow between the requesting user and the targeted one exists
+      operationId: checkFollow
+      responses:
+        '200':
+          description: Here's your check
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/check"
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: Other or This user not found
+        '500':
+          $ref: '#/components/responses/InternalServerError'
   /users/{user-name}/bans/{other-name}:
     parameters:
       - in: path
@@ -520,6 +541,27 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           description: Other user not found
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    get:
+      security:
+      - bearerAuth: []
+      tags: ["user"]
+      summary: Check ban user
+      description: |-
+        Returns whether a ban between the requesting user and the targeted one exists
+      operationId: checkBan
+      responses:
+        '200':
+          description: Here's your check
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/check"
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: Other or This user not found
         '500':
           $ref: '#/components/responses/InternalServerError'
   /users/{user-name}/stream:

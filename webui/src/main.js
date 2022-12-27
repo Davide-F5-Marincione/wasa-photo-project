@@ -15,6 +15,7 @@ import './assets/topbar.css'
 import './assets/posts.css'
 import './assets/searchbar.css'
 import './assets/upload.css'
+import './assets/userview.css'
 import './assets/main.css'
 
 const app = createApp(App)

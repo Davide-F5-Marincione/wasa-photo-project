@@ -27,7 +27,7 @@ export default {
 		<div class="logo px-4 fs-1">WASAPhoto</div>
 	</div>
 	<div class="center">
-    	<p><input class="login-bar text-white text-center fs-4" v-on:keyup.enter="login" v-model="input" type="text" placeholder="Enter your username"/></p>
+    	<p><input class="login-bar text-white text-center fs-4" v-on:keyup.enter="login" v-model="input" type="text" placeholder="Enter your username" maxlength="32"/></p>
 		<ErrorMsg v-if="errormsg" :msg="errormsg"></ErrorMsg>
 	</div>
 </template>
