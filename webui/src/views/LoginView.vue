@@ -26,7 +26,8 @@ export default {
 </script>
 
 <template>
-	<div class="navbar navbar-dark">
+	<div class="center logo-outside">
+		Davide Marincione's
 		<div class="logo px-4 fs-1">WASAPhoto</div>
 	</div>
 	<div class="center">

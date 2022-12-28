@@ -80,13 +80,12 @@ export default {
 			if (!this.imgId) {
 				return
 			}
-			var textarea = document.getElementById("comment-text");
-			if (textarea.value.length <= 0) {
+			if (this.commentWrite.length <= 0) {
 				return
 			}
 			try {
-				await this.$axios.post("/photos/" + this.imgId.toString() + "/comments",  textarea.value, {headers: {'Content-Type': 'application/json'}});
-				textarea.value = ""
+				await this.$axios.post("/photos/" + this.imgId.toString() + "/comments",  this.commentWrite, {headers: {'Content-Type': 'application/json'}});
+				this.commentWrite = ""
 				this.commentsResults = []
 				this.commentsLimit = ""
 				this.refreshData(false, true)
@@ -160,8 +159,8 @@ export default {
 				</div>
 				<button class="post-comments-end" :onclick="() => this.refreshData(false, true)">See more comments!</button>
 			</div>
-			<textarea id="comment-text" class="post-comment-writer" maxlength="256"></textarea>
-			<button class="post-comment-button" :onclick="sendComment">
+			<textarea class="post-comment-writer" maxlength="256" v-model="commentWrite"></textarea>
+			<button class="post-comment-button" v-on:click="sendComment">
 				Comment!
 			</button>
 			<ErrorMsg v-if="errormsg" :msg="errormsg"></ErrorMsg>

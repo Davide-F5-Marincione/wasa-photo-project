@@ -23,6 +23,10 @@ button:focus {
 	fill: none;
 }
 
+.logo-outside {
+	display: flex;
+	flex-direction: column;
+}
 
 .logo {
 	padding-top: 0.75rem;
