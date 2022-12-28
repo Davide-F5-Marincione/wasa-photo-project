@@ -4,9 +4,9 @@ export default {
     data: function () {
         return {
             errormsg: null,
-            photosResults: [],
-			followersResults: [],
-			followingResults: [],
+            photosResults: new Set(),
+			followersResults: new Set(),
+			followingResults: new Set(),
 			photosLimit: "",
 			followersBase: "",
 			followingBase: "",
@@ -33,30 +33,31 @@ export default {
 			this.errormsg = null;
 			try {
 				var response = await this.$axios.get("/users/" + this.othername, {params: {"photos-limit":this.photosLimit, "followers-base": this.followersBase, "following-base": this.followingBase}});
-				
-				for (let i=0; i< response.data["followers-running-batch"].length; i++) {
-					if (response.data["followers-running-batch"][i].name == this.username) {
-						response.data["followers-running-batch"].splice(i, 1)
-						break
-					}
-				}
 
 				if (photos_new) {
-					this.photosResults.push(...response.data["photos-running-batch"])
+					response.data["photos-running-batch"].forEach(element => {
+						this.photosResults.add(element)
+					});
 					if (response.data["photos-running-batch"].length > 0) {
 						this.photosLimit = response.data["photos-running-batch"][response.data["photos-running-batch"].length - 1];
 					}
 				}
 
 				if (followers_new) {
-					this.followersResults.push(...response.data["followers-running-batch"])
+					response.data["followers-running-batch"].forEach(element => {
+						if (element.name != this.username) {
+							this.followersResults.add(element.name)
+						}
+					});
 					if (response.data["followers-running-batch"].length > 0) {
 						this.followersBase = response.data["followers-running-batch"][response.data["followers-running-batch"].length - 1].name;
 					}
 				}
 
 				if (following_new) {
-					this.followingResults.push(...response.data["following-running-batch"])
+					response.data["following-running-batch"].forEach(element => {
+						this.followingResults.add(element.name)
+					});
 					if (response.data["following-running-batch"].length > 0) {
 						this.followingBase = response.data["following-running-batch"][response.data["following-running-batch"].length - 1].name;
 					}
@@ -102,9 +103,9 @@ export default {
 			this.errormsg = null;
 			try {
 				await this.$axios.delete("/photos/" + id.toString());
-                this.results = []
-                this.limit = ""
-                this.refreshData()
+                this.photosResults.clear()
+                this.photosLimit = ""
+                this.refreshData(true, false, false)
 			} catch (e) {
 				this.errormsg = e.toString();
 			}
@@ -134,20 +135,20 @@ export default {
 		<div class="deck">
 			<div>Checking <span v-if="othername != username"><b>{{ othername }}</b>'s</span><span v-if="othername == username"><b>your</b></span> profile.</div>
 			<div class="buttons" v-if="othername != username">
-				<button class="unban-button" v-if="banning" :onclick="() => unbanThis().then()">Unban</button>
-				<button class="ban-button" v-if="!banning" :onclick="() => banThis().then()">Ban</button>
-				<button class="unfollow-button" v-if="following" :onclick="() => unfollowThis().then()">Unfollow</button>
-				<button class="follow-button" v-if="!following" :onclick="() => followThis().then()">Follow</button>
+				<button class="unban-button" v-if="banning" :onclick="unbanThis">Unban</button>
+				<button class="ban-button" v-if="!banning" :onclick="banThis">Ban</button>
+				<button class="unfollow-button" v-if="following" :onclick="unfollowThis">Unfollow</button>
+				<button class="follow-button" v-if="!following" :onclick="followThis">Follow</button>
 			</div>
 			<div><span v-if="othername != username"><b>{{ othername }}</b>'s</span><span v-if="othername == username"><b>Your</b></span> followers:</div>
-			<div class="follow-container">
-				<router-link class="follow-element" v-for="element in followersResults"  v-bind:to="'/users/' +element.name">{{ element.name }}</router-link>
+			<div class="follow-container disable-scrollbars">
+				<router-link class="follow-element" v-for="element in followersResults"  v-bind:to="'/users/' +element">{{ element }}</router-link>
 				<router-link v-if="following" class="follow-element" :to="'/users/' + username">{{ username }}</router-link>
 				<button class="follow-element-end" :onclick="() => refreshData(false, true, false)">More followers!</button>
 			</div>
 			<div><span v-if="othername != username"><b>{{ othername }}</b>'s</span><span v-if="othername == username"><b>Your</b></span> following:</div>
-			<div class="follow-container">
-				<router-link class="follow-element" v-for="element in followingResults"  v-bind:to="'/users/' +element.name">{{ element.name }}</router-link>
+			<div class="follow-container disable-scrollbars">
+				<router-link class="follow-element" v-for="element in followingResults"  v-bind:to="'/users/' +element">{{ element }}</router-link>
 				<button class="follow-element-end" :onclick="() => refreshData(false, false, true)">More followings!</button>
 			</div>
 			<div v-if="othername==username">

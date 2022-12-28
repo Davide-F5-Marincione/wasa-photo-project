@@ -45,11 +45,11 @@ export default {
 	<div>
         <div class="upload">
             <input id="title" class="upload-title" type="text" placeholder="Insert title here" maxlength="64"/>
-            <input id="file-input" accept="image/*" class="upload-photo" type="file" placeholder="Load photo here" :onchange="() => showImg()"/>
+            <input id="file-input" accept="image/*" class="upload-photo" type="file" placeholder="Load photo here" :onchange="showImg"/>
             <div class="upload-photo-container">
                 <img id="img-show" class="photo" alt="Here should be your image..." src="#"/>
             </div>
-            <button class="upload-button" :onclick="() => uploadImage()"> Upload!</button>
+            <button class="upload-button" :onclick="uploadImage"> Upload!</button>
         </div>
 		<ErrorMsg v-if="errormsg" :msg="errormsg"></ErrorMsg>
 	</div>

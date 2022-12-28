@@ -3,9 +3,8 @@ export default {
     data: function () {
         return {
             errormsg: null,
-            results: [],
-            limit: "",
-            resp: ""
+            results: new Set(),
+            limit: ""
         };
     },
     methods: {
@@ -14,9 +13,9 @@ export default {
 			try {
 				var response = await this.$axios.get("/users/" + localStorage.username + "/stream", {params: {"photos-limit":this.limit}});
                 
-                this.resp = response.data
-
-                this.results.push(...response.data)
+                response.data.forEach(element => {
+                    this.results.add(element)
+                });
                 if (response.data.length > 0) {
                     this.limit = response.data[response.data.length - 1];
                 }
@@ -30,7 +29,7 @@ export default {
 			this.errormsg = null;
 			try {
 				await this.$axios.delete("/photos/" + id.toString());
-                this.results = []
+                this.results.clear()
                 this.limit = ""
                 this.refreshData()
 			} catch (e) {
@@ -49,7 +48,7 @@ export default {
 	<div>
 		<div class="posts-holder">
             <PostCard v-for="elem in results" v-bind:imgId="elem" v-bind:del="()=>delPost(elem)"></PostCard>
-            <button class="posts-more" :onclick="() => refreshData()">Show more posts!</button>
+            <button class="posts-more" :onclick="refreshData">Show more posts!</button>
         </div>
 		<ErrorMsg v-if="errormsg" :msg="errormsg"></ErrorMsg>
 	</div>

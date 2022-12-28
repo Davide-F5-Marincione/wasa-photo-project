@@ -6,6 +6,7 @@
     border-radius: 10px;
     top: 8vh;
     font-size: 1.5vh;
+    z-index: 99;
 }
 
 .buttons {
@@ -24,6 +25,10 @@ button.follow-button {
     border-radius: 5px;
 }
 
+.follow-button:active{
+	background-color: var(--grey);
+}
+
 button.unfollow-button {
 	background-color: var(--dk-black);
     margin: .2vw;
@@ -35,6 +40,10 @@ button.unfollow-button {
     border-radius: 5px;
 }
 
+.unfollow-button:active{
+	background-color: var(--grey);
+}
+
 button.ban-button {
 	background-color: brown;
     margin: .2vw;
@@ -43,6 +52,10 @@ button.ban-button {
     border-width: 0vw;
     width: 8vw;
     border-radius: 5px;
+}
+
+.ban-button:active{
+	background-color: var(--grey);
 }
 
 button.unban-button {
@@ -56,12 +69,17 @@ button.unban-button {
     border-radius: 5px;
 }
 
+.unban-button:active{
+	background-color: var(--grey);
+}
+
 .follow-container {
 	background-color: #00000000;
     width: 18vw;
     height: 10vh;
     margin: 0vw;
     position: relative;
+    overflow-y: scroll;
 }
 
 .follow-element {
@@ -86,6 +104,10 @@ button.unban-button {
     text-decoration: none;
     font-size: 1.5vh;
     border-width: 0vw;
+}
+
+.follow-element-end:active{
+	background-color: var(--grey);
 }
 
 .new-username {

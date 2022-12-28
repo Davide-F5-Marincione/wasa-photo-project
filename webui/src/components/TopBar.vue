@@ -22,7 +22,7 @@ export default {
         <router-link class="navbar-goto-stream" to="/stream">Goto stream</router-link>
 		<router-link class="navbar-goto-upload" to="/upload">Upload photo</router-link>
 		<SearchBar></SearchBar>
-		<div class="logged-text">Logged as: <router-link class="logged-text" :to="'/users/' + username"><b>{{username}}</b></router-link></div>
+		<div class="logged-text">Logged as: <router-link class="logged-text" :to="username.length > 0 ? '/users/' + username : '/'"><b>{{username}}</b></router-link></div>
 	</header>
 </template>
 

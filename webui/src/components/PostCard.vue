@@ -9,7 +9,7 @@ export default {
 			author:"The browser itself",
 			date: new Date().toLocaleString( 'sv', { timeZoneName: 'short' } ).split(" ").slice(0,2).join(" "),
 			liked: false,
-			likersResult: [],
+			likersResult: new Set(),
 			commentsResults: [],
 			likesBase: "",
 			commentsLimit: "",
@@ -29,16 +29,13 @@ export default {
 				this.author = response.data["photo-author"]
 				this.date = this.convDate(response.data["photo-date"])
 				this.liked = response.data["liked"]
-				
-				for (let i=0; i< response.data["likes-running-batch"].length; i++) {
-					if (response.data["likes-running-batch"][i].name == this.username) {
-						response.data["likes-running-batch"].splice(i, 1)
-						break
-					}
-				}
 
 				if (new_likes) {
-					this.likersResult.push(...response.data["likes-running-batch"])
+					response.data["likes-running-batch"].forEach(element => {
+						if (element.name != this.username) {
+							this.likersResult.add(element.name)
+						}
+					});
 					if (response.data["likes-running-batch"].length > 0) {
 						this.likesBase = response.data["likes-running-batch"][response.data["likes-running-batch"].length - 1].name;
 					}
@@ -84,6 +81,9 @@ export default {
 				return
 			}
 			var textarea = document.getElementById("comment-text");
+			if (textarea.value.length <= 0) {
+				return
+			}
 			try {
 				await this.$axios.post("/photos/" + this.imgId.toString() + "/comments",  textarea.value, {headers: {'Content-Type': 'application/json'}});
 				textarea.value = ""
@@ -133,21 +133,23 @@ export default {
 						<div class="post-date" align="right">
 							{{ date }}
 						</div>
-						<button v-if="author == username" class="delete-post" align="right" :onclick="() => del()">delete this post</button>
+						<button v-if="author != username && !liked" class="post-like-button" :onclick="likeThis">like</button>
+						<button v-if="author != username && liked" class="post-unlike-button" :onclick="unlikeThis">unlike</button>
+						<button v-if="author == username" class="delete-post" align="right" :onclick="del">delete this post</button>
 					</div>
 				</div>
 			</div>
 			<ImageContainer :alt="title" :img-id="imgId"></ImageContainer>
 		</div>
 		<div class="post-commentsandlikes">
-			<div id="likesholder" class="post-likesholder">
-				<router-link class="like-element" v-for="element in likersResult"  v-bind:to="'/users/' +element.name">{{ element.name }}</router-link>
+			<div id="likesholder" class="post-likesholder disable-scrollbars">
+				Users who like this:
+				<router-link class="like-element" v-for="element in likersResult"  v-bind:to="'/users/' +element">{{ element }}</router-link>
 				<router-link v-if="liked" class="like-element" :to="'/users/' + username">{{ username }}</router-link>
 				<button class="like-element-end" :onclick="() => this.refreshData(true, false)">More likes!</button>
 			</div>
-			<button v-if="!liked" class="post-like-button" :onclick="() => this.likeThis().then()">like</button>
-			<button v-if="liked" class="post-unlike-button" :onclick="() => this.unlikeThis().then()">unlike</button>
 			<div class="post-comments disable-scrollbars">
+				Users' comments:
 				<div v-for="element in commentsResults" class="post-comment">
 					<div class="comment-authoranddeleter">
 						<router-link class="comment-author" v-bind:to="'/users/' + element['comment-author']"> {{ element["comment-author"] }}: </router-link>
@@ -159,7 +161,7 @@ export default {
 				<button class="post-comments-end" :onclick="() => this.refreshData(false, true)">See more comments!</button>
 			</div>
 			<textarea id="comment-text" class="post-comment-writer" maxlength="256"></textarea>
-			<button class="post-comment-button" :onclick="() => this.sendComment()">
+			<button class="post-comment-button" :onclick="sendComment">
 				Comment!
 			</button>
 			<ErrorMsg v-if="errormsg" :msg="errormsg"></ErrorMsg>

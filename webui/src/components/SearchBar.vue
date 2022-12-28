@@ -5,7 +5,7 @@ export default {
 			errormsg: null,
 			searchName: "",
 			baseName: "",
-			results: []
+			results: new Set()
 		}
 	},
 	methods: {
@@ -15,7 +15,9 @@ export default {
 				let response = await this.$axios.get("/users", { params: {
                         "user-name": this.searchName, "name-base": this.baseName
                     }});
-				this.results.push(...response.data);
+				response.data.forEach(element => {
+					this.results.add(element)
+				});
 				if (response.data.length > 0) {
 					this.baseName = response.data[response.data.length - 1];
 				}
@@ -26,7 +28,7 @@ export default {
 
 		resetSearch() {
 			this.baseName = "";
-			this.results = [];
+			this.results.clear();
 		}
 	}
 }
@@ -39,7 +41,7 @@ export default {
 			<div v-for="element in results"  class="navbar-search-result">
 				<router-link class="navbar-search-result-text" v-bind:to="'/users/' + element"> {{ element }}</router-link>
 			</div>
-			<button v-if="results.length > 0" class="navbar-search-result-end" :onclick="() => this.furtherRequest()">Click here to see more results!</button>
+			<button v-if="results.length > 0" class="navbar-search-result-end" :onclick="furtherRequest">Click here to see more results!</button>
         </div>
     </div>
 	<div>
