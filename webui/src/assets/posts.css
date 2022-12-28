@@ -227,7 +227,7 @@ button.post-unlike-button {
 .post-comments {
 	background-color: var(--lt-black);
     width: 20vw;
-    height: 43vh;
+    height: 47vh;
     margin: 0vw;
     margin-top: 10vh;
     overflow-y: scroll;
