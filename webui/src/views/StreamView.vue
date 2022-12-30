@@ -47,8 +47,8 @@ export default {
 	<TopBar></TopBar>
 	<div>
 		<div class="posts-holder">
-            <PostCard v-for="elem in results" v-bind:imgId="elem" v-bind:del="()=>delPost(elem)"></PostCard>
-            <button class="posts-more" :onclick="refreshData">Show more posts!</button>
+            <PostCard v-for="elem in results" :imgId="elem" :del="()=>delPost(elem)" v-bind:key="elem"></PostCard>
+            <button class="posts-more" v-on:click="refreshData">Show more posts!</button>
         </div>
 		<ErrorMsg v-if="errormsg" :msg="errormsg"></ErrorMsg>
 	</div>

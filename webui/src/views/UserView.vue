@@ -135,21 +135,21 @@ export default {
 		<div class="deck">
 			<div>Checking <span v-if="othername != username"><b>{{ othername }}</b>'s</span><span v-if="othername == username"><b>your</b></span> profile.</div>
 			<div class="buttons" v-if="othername != username">
-				<button class="unban-button" v-if="banning" :onclick="unbanThis">Unban</button>
-				<button class="ban-button" v-if="!banning" :onclick="banThis">Ban</button>
-				<button class="unfollow-button" v-if="following" :onclick="unfollowThis">Unfollow</button>
-				<button class="follow-button" v-if="!following" :onclick="followThis">Follow</button>
+				<button class="unban-button" v-if="banning" v-on:click="unbanThis">Unban</button>
+				<button class="ban-button" v-if="!banning" v-on:click="banThis">Ban</button>
+				<button class="unfollow-button" v-if="following" v-on:click="unfollowThis">Unfollow</button>
+				<button class="follow-button" v-if="!following" v-on:click="followThis">Follow</button>
 			</div>
 			<div><span v-if="othername != username"><b>{{ othername }}</b>'s</span><span v-if="othername == username"><b>Your</b></span> followers:</div>
 			<div class="follow-container disable-scrollbars">
-				<router-link class="follow-element" v-for="element in followersResults"  v-bind:to="'/users/' +element">{{ element }}</router-link>
+				<router-link class="follow-element" v-for="element in followersResults"  :to="'/users/' +element" v-bind:key="element">{{ element }}</router-link>
 				<router-link v-if="following" class="follow-element" :to="'/users/' + username">{{ username }}</router-link>
-				<button class="follow-element-end" :onclick="() => refreshData(false, true, false)">More followers!</button>
+				<button class="follow-element-end" v-on:click="() => refreshData(false, true, false)">More followers!</button>
 			</div>
 			<div><span v-if="othername != username"><b>{{ othername }}</b>'s</span><span v-if="othername == username"><b>Your</b></span> following:</div>
 			<div class="follow-container disable-scrollbars">
-				<router-link class="follow-element" v-for="element in followingResults"  v-bind:to="'/users/' +element">{{ element }}</router-link>
-				<button class="follow-element-end" :onclick="() => refreshData(false, false, true)">More followings!</button>
+				<router-link class="follow-element" v-for="element in followingResults"  :to="'/users/' +element" v-bind:key="element">{{ element }}</router-link>
+				<button class="follow-element-end" v-on:click="() => refreshData(false, false, true)">More followings!</button>
 			</div>
 			<div v-if="othername==username">
 				Modify your username:<br/>
@@ -157,8 +157,8 @@ export default {
 			</div>
 		</div>
 		<div class="posts-holder">
-            <PostCard v-for="elem in photosResults" v-bind:imgId="elem" v-bind:del="()=>delPost(elem)"></PostCard>
-            <button class="posts-more" :onclick="() => refreshData(true, false, false)">Show more posts!</button>
+            <PostCard v-for="elem in photosResults" :imgId="elem" :del="()=>delPost(elem)" v-bind:key="elem"></PostCard>
+            <button class="posts-more" v-on:click="() => refreshData(true, false, false)">Show more posts!</button>
         </div>
 		<ErrorMsg v-if="errormsg" :msg="errormsg"></ErrorMsg>
 	</div>

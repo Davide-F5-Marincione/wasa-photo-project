@@ -38,10 +38,10 @@ export default {
     <div class="navbar-search">
         <input class="navbar-search-input" v-on:keyup="resetSearch" v-on:keyup.enter="userSearch" v-model="searchName" type="text" placeholder="Search user" maxlength="32">
         <div class="dropdown-menu-dark disable-scrollbars" id="candidateUsersDropdown">
-			<div v-for="element in results"  class="navbar-search-result">
-				<router-link class="navbar-search-result-text" v-bind:to="'/users/' + element"> {{ element }}</router-link>
+			<div v-for="element in results"  class="navbar-search-result" v-bind:key="element">
+				<router-link class="navbar-search-result-text" :to="'/users/' + element"> {{ element }}</router-link>
 			</div>
-			<button v-if="results.length > 0" class="navbar-search-result-end" :onclick="furtherRequest">Click here to see more results!</button>
+			<button v-if="results.length > 0" class="navbar-search-result-end" v-on:click="furtherRequest">Click here to see more results!</button>
         </div>
     </div>
 	<div>

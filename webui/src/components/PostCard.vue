@@ -132,9 +132,9 @@ export default {
 						<div class="post-date" align="right">
 							{{ date }}
 						</div>
-						<button v-if="author != username && !liked" class="post-like-button" :onclick="likeThis">like</button>
-						<button v-if="author != username && liked" class="post-unlike-button" :onclick="unlikeThis">unlike</button>
-						<button v-if="author == username" class="delete-post" align="right" :onclick="del">delete this post</button>
+						<button v-if="author != username && !liked" class="post-like-button" v-on:click="likeThis">like</button>
+						<button v-if="author != username && liked" class="post-unlike-button" v-on:click="unlikeThis">unlike</button>
+						<button v-if="author == username" class="delete-post" align="right" v-on:click="del">delete this post</button>
 					</div>
 				</div>
 			</div>
@@ -143,21 +143,21 @@ export default {
 		<div class="post-commentsandlikes">
 			<div id="likesholder" class="post-likesholder disable-scrollbars">
 				Users who like this:
-				<router-link class="like-element" v-for="element in likersResult"  v-bind:to="'/users/' +element">{{ element }}</router-link>
+				<router-link class="like-element" v-for="element in likersResult" v-bind:key="element" :to="'/users/' +element">{{ element }}</router-link>
 				<router-link v-if="liked" class="like-element" :to="'/users/' + username">{{ username }}</router-link>
-				<button class="like-element-end" :onclick="() => this.refreshData(true, false)">More likes!</button>
+				<button class="like-element-end" v-on:click="() => this.refreshData(true, false)">More likes!</button>
 			</div>
 			<div class="post-comments disable-scrollbars">
 				Users' comments:
-				<div v-for="element in commentsResults" class="post-comment">
+				<div v-for="element in commentsResults" class="post-comment" v-bind:key="element['comment-id']">
 					<div class="comment-authoranddeleter">
-						<router-link class="comment-author" v-bind:to="'/users/' + element['comment-author']"> {{ element["comment-author"] }}: </router-link>
-						<button v-if="element['comment-author']==username" class="comment-deleter" v-bind:onclick="() => this.deleteComment(element['comment-id'])">✕</button>
+						<router-link class="comment-author" :to="'/users/' + element['comment-author']"> {{ element["comment-author"] }}: </router-link>
+						<button v-if="element['comment-author']==username" class="comment-deleter" v-on:click="() => this.deleteComment(element['comment-id'])">✕</button>
 					</div>
 					<div class="comment-content">{{ element["comment-text"] }}</div>
 					<div class="comment-date">{{ convDate(element["comment-date"]) }}</div>
 				</div>
-				<button class="post-comments-end" :onclick="() => this.refreshData(false, true)">See more comments!</button>
+				<button class="post-comments-end" v-on:click="() => this.refreshData(false, true)">See more comments!</button>
 			</div>
 			<textarea class="post-comment-writer" maxlength="256" v-model="commentWrite"></textarea>
 			<button class="post-comment-button" v-on:click="sendComment">

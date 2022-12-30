@@ -49,7 +49,7 @@ export default {
             <div class="upload-photo-container">
                 <img id="img-show" class="photo" alt="Here should be your image..." src="#"/>
             </div>
-            <button class="upload-button" :onclick="uploadImage"> Upload!</button>
+            <button class="upload-button" v-on:click="uploadImage"> Upload!</button>
         </div>
 		<ErrorMsg v-if="errormsg" :msg="errormsg"></ErrorMsg>
 	</div>
