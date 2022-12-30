@@ -18,3 +18,4 @@ COPY --from=builder /app/webui/dist /usr/share/nginx/html
 # (CMD and EXPOSE are already present in the nginx:stable container, no need to repeat)
 
 # Ahem... even here the default works like a charm... what now?
+# (nginx slim exists only for version 1.23.3, but the current stable is 1.22.1 soooo... can't do the same trick as backend!)

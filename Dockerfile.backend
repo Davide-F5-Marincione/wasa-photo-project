@@ -8,8 +8,8 @@ COPY . .
 RUN go build -o /app/webapi ./cmd/webapi
 
 
-### Create final container
-FROM debian:bullseye
+### Create final container --- HEY I MANAGED TO DO SOMETHING DIFFERENT*!
+FROM debian:bullseye-slim
 
 ### Inform Docker about which port is used
 EXPOSE 3000 4000
@@ -21,4 +21,4 @@ COPY --from=builder /app/webapi ./
 ### Executable command
 CMD ["/app/webapi"]
 
-# Would've loved to make this different than the example but... i've got nothing else to add?
+# Would've loved to make this significantly different than the example but... i've got nothing else to add?

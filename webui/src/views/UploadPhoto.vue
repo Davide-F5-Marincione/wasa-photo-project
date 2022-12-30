@@ -3,7 +3,8 @@ export default {
     data: function () {
         return {
             errormsg: null,
-            file: ""
+            file: "",
+            title: ""
         };
     },
     methods: {
@@ -19,14 +20,14 @@ export default {
             if (!this.file) {
                 return
             }
-            title = document.getElementById("title").value
-            if (!title) {
+
+            if (!this.title) {
                 return
             }
 
             var form = new FormData();
             form.append("photo", this.file)
-            form.append("title", title)
+            form.append("title", this.title)
 
             this.errormsg = null;
 			try {
@@ -44,8 +45,8 @@ export default {
 	<TopBar></TopBar>
 	<div>
         <div class="upload">
-            <input id="title" class="upload-title" type="text" placeholder="Insert title here" maxlength="64"/>
-            <input id="file-input" accept="image/*" class="upload-photo" type="file" placeholder="Load photo here" :onchange="showImg"/>
+            <input class="upload-title" type="text" placeholder="Insert title here" maxlength="64" v-model="title"/>
+            <input id="file-input" accept="image/*" class="upload-photo" type="file" placeholder="Load photo here" v-on:change="showImg"/>
             <div class="upload-photo-container">
                 <img id="img-show" class="photo" alt="Here should be your image..." src="#"/>
             </div>
