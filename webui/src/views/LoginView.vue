@@ -20,7 +20,7 @@ export default {
 		},
 	},
 	created() {
-		localStorage.clear() //If we are accessing here that means we can clear the localstorage ()
+		localStorage.clear(); //If we are accessing here that means we can clear the localstorage ()
 	}
 }
 </script>

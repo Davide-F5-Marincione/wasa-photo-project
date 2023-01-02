@@ -9,11 +9,11 @@ export default {
     },
     methods: {
         showImg() {
-            const [file] = document.getElementById("file-input").files
-            this.file = file
+            const [file] = document.getElementById("file-input").files;
+            this.file = file;
             if (this.file) {
-                var shower = document.getElementById("img-show")
-                shower.src = URL.createObjectURL(this.file)
+                var shower = document.getElementById("img-show");
+                shower.src = URL.createObjectURL(this.file);
             }
         },
         async uploadImage() {
@@ -26,13 +26,13 @@ export default {
             }
 
             var form = new FormData();
-            form.append("photo", this.file)
-            form.append("title", this.title)
+            form.append("photo", this.file);
+            form.append("title", this.title);
 
             this.errormsg = null;
 			try {
 				await this.$axios.post("/photos", form, { headers: {"Content-Type": "multipart/form-data"}});
-                this.$router.push("stream")
+                this.$router.push("stream");
 			} catch (e) {
 				this.errormsg = e.toString();
 			}

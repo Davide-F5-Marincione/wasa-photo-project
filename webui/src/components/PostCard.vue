@@ -25,15 +25,15 @@ export default {
 			this.errormsg = null;
 			try {
 				var response = await this.$axios.get("/photos/" + this.imgId.toString(), {params: {"likes-base": this.likesBase, "comments-limit":this.commentsLimit}});
-				this.title = response.data["photo-title"]
-				this.author = response.data["photo-author"]
-				this.date = this.convDate(response.data["photo-date"])
-				this.liked = response.data["liked"]
+				this.title = response.data["photo-title"];
+				this.author = response.data["photo-author"];
+				this.date = this.convDate(response.data["photo-date"]);
+				this.liked = response.data["liked"];
 
 				if (new_likes) {
 					response.data["likes-running-batch"].forEach(element => {
 						if (element.name != this.username) {
-							this.likersResult.add(element.name)
+							this.likersResult.add(element.name);
 						}
 					});
 					if (response.data["likes-running-batch"].length > 0) {
@@ -41,7 +41,7 @@ export default {
 					}
 				}
 				if (new_comments) {
-					this.commentsResults.push(...response.data["comments-running-batch"])
+					this.commentsResults.push(...response.data["comments-running-batch"]);
 					if (response.data["comments-running-batch"].length > 0) {
 						this.commentsLimit = response.data["comments-running-batch"][response.data["comments-running-batch"].length - 1]["comment-id"];
 					}
@@ -74,7 +74,7 @@ export default {
 			this.refreshData();
 		},
 		convDate(date) {
-			return (new Date(date.split(" ").join("T") + "Z")).toLocaleString( 'sv', { timeZoneName: 'short' } ).split(" ").slice(0,2).join(" ") //TODO: convert to local timezone
+			return (new Date(date.split(" ").join("T") + "Z")).toLocaleString( 'sv', { timeZoneName: 'short' } ).split(" ").slice(0,2).join(" ");
 		},
 		async sendComment() {
 			if (!this.imgId) {
@@ -85,10 +85,10 @@ export default {
 			}
 			try {
 				await this.$axios.post("/photos/" + this.imgId.toString() + "/comments",  this.commentWrite, {headers: {'Content-Type': 'application/json'}});
-				this.commentWrite = ""
-				this.commentsResults = []
-				this.commentsLimit = ""
-				this.refreshData(false, true)
+				this.commentWrite = "";
+				this.commentsResults = [];
+				this.commentsLimit = "";
+				this.refreshData(false, true);
 			} catch (e) {
 				this.errormsg = e.toString();
 			}
@@ -101,9 +101,9 @@ export default {
 
 			try {
 				await this.$axios.delete("/photos/" + this.imgId.toString() + "/comments/" + id.toString());
-				this.commentsResults = []
-				this.commentsLimit = ""
-				this.refreshData(false, true)
+				this.commentsResults = [];
+				this.commentsLimit = "";
+				this.refreshData(false, true);
 			} catch (e) {
 				this.errormsg = e.toString();
 			}

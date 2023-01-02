@@ -103,9 +103,9 @@ export default {
 			this.errormsg = null;
 			try {
 				await this.$axios.delete("/photos/" + id.toString());
-                this.photosResults.clear()
-                this.photosLimit = ""
-                this.refreshData(true, false, false)
+                this.photosResults.clear();
+                this.photosLimit = "";
+                this.refreshData(true, false, false);
 			} catch (e) {
 				this.errormsg = e.toString();
 			}
@@ -114,9 +114,9 @@ export default {
 			this.errormsg = null;
 			try {
 				await this.$axios.put("/users/" + this.username, this.input, {headers:{"Content-Type":"application/json"}});
-				localStorage.username = this.input
-				this.input=""
-                this.$router.push("/users/" + localStorage.username)
+				localStorage.username = this.input;
+				this.input="";
+                this.$router.push("/users/" + localStorage.username);
 			} catch (e) {
 				this.errormsg = e.toString();
 			}

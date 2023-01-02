@@ -29,9 +29,9 @@ export default {
 			this.errormsg = null;
 			try {
 				await this.$axios.delete("/photos/" + id.toString());
-                this.results.clear()
-                this.limit = ""
-                this.refreshData()
+                this.results.clear();
+                this.limit = "";
+                this.refreshData();
 			} catch (e) {
 				this.errormsg = e.toString();
 			}
